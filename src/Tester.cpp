@@ -1,5 +1,10 @@
 #include "Tester.h"
 
+#include <iostream>
+
+using std::cout;
+using std::endl;
+
 // Public Methods
 
 void Tester::dnsSerialization(const bytes& message)
@@ -7,10 +12,12 @@ void Tester::dnsSerialization(const bytes& message)
     DnsMessage dns_msg(message);
 
     cout << "Transaction ID: ";
-    printBytes(dns_msg.getTransactionId());
+    ByteHelper::printBytes(dns_msg.getTransactionId());
+    cout << endl;
 
     cout << "Flags: ";
-    printBytes(dns_msg.getFlags());
+    ByteHelper::printBytes(dns_msg.getFlags());
+    cout << endl;
 
     cout << "Questions: " << dns_msg.getQuestions() << endl;
     cout << "Answers RRs: " << dns_msg.getAnswers_RRs() << endl;
@@ -21,19 +28,6 @@ void Tester::dnsSerialization(const bytes& message)
     cout << "Query name: " << query.name << endl;
     cout << "Query type: " << query.type << endl;
     cout << "Query class: ";
-    printBytes(query.queryClass);
-}
-
-// Private Methods
-
-void Tester::printBytes(const bytes& byteVec)
-{
-    cout << "0x";
-
-    for(byte b : byteVec)
-    {
-        cout << std::hex << (int)b;
-    }
-
-    cout << std::dec << endl;
+    ByteHelper::printBytes(query.queryClass);
+    cout << endl;
 }

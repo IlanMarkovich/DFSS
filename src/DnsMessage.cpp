@@ -8,17 +8,20 @@ DnsMessage::DnsMessage(const bytes& message)
     // Read all fields from the message given as input
     _transactionId = readPortionFromMessage(message, i);
     _flags = readPortionFromMessage(message, i);
-    _questions = readPortionFromMessage(message, i);
-    _answers_RRs = readPortionFromMessage(message, i);
-    _authority_RRs = readPortionFromMessage(message, i);
-    _additional_RRs = readPortionFromMessage(message, i);
+    _questions = ByteHelper::bytesToInt(readPortionFromMessage(message, i));
+    _answers_RRs = ByteHelper::bytesToInt(readPortionFromMessage(message, i));
+    _authority_RRs = ByteHelper::bytesToInt(readPortionFromMessage(message, i));
+    _additional_RRs = ByteHelper::bytesToInt(readPortionFromMessage(message, i));
 
     string queryName;
+    i++;
 
     // Read query name from the queries
     while(message[i] != '\0')
     {
-        queryName += message[i++];
+        // If the char is not a displayable character, insert a dot
+        queryName += message[i] <= '\31' ? '.' : message[i];
+        i++;
     }
 
     bytes type = readPortionFromMessage(message, ++i);
@@ -41,22 +44,22 @@ bytes DnsMessage::getFlags() const
 
 int DnsMessage::getQuestions() const
 {
-    return ByteHelper::bytesToInt(_questions);
+    return _questions;
 }
 
 int DnsMessage::getAnswers_RRs() const
 {
-    return ByteHelper::bytesToInt(_answers_RRs);
+    return _answers_RRs;
 }
 
 int DnsMessage::getAuthority_RRs() const
 {
-    return ByteHelper::bytesToInt(_authority_RRs);
+    return _authority_RRs;
 }
 
 int DnsMessage::getAdditional_RRs() const
 {
-    return ByteHelper::bytesToInt(_additional_RRs);
+    return _additional_RRs;
 }
 
 Query DnsMessage::getQuery() const
