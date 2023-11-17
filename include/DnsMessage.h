@@ -21,10 +21,10 @@ private:
     // Fields
     bytes _transactionId;
     bytes _flags;
-    bytes _questions;
-    bytes _answers_RRs;
-    bytes _authority_RRs;
-    bytes _additional_RRs;
+    int _questions;
+    int _answers_RRs;
+    int _authority_RRs;
+    int _additional_RRs;
     Query _query;
 
 public:

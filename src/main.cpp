@@ -37,7 +37,7 @@ int main()
         static_cast<byte>(0x00),
         static_cast<byte>(0x00),
         static_cast<byte>(0x0d),
-        'n', 'c', '-', 'u', 'n', 'i', 't', '8', '-', 'm', 'q', 't',
+        'n', 'c', '-', 'u', 'n', 'i', 't', '8', '-', 'm', 'q', 't', 't',
         static_cast<byte>(0x07),
         'n', 'o', 'r', 'd', 'v', 'p', 'n',
         static_cast<byte>(0x03),
