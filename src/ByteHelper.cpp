@@ -1,6 +1,6 @@
 #include "ByteHelper.h"
 
-int ByteHelper::bytesToInt(bytes input)
+int ByteHelper::bytesToInt(const bytes& input)
 {
     int result = 0;
 

@@ -21,10 +21,10 @@ DnsMessage::DnsMessage(const bytes& message)
         queryName += message[i++];
     }
 
-    bytes queryType = readPortionFromMessage(message, ++i);
-    bytes dnsClass = readPortionFromMessage(message, i);
+    bytes type = readPortionFromMessage(message, ++i);
+    bytes queryClass = readPortionFromMessage(message, i);
 
-    _query = (Query){ queryName, ByteHelper::bytesToInt(queryType), dnsClass };
+    _query = (Query){ queryName, ByteHelper::bytesToInt(type), queryClass };
 }
 
 // Getters

@@ -12,5 +12,5 @@ public:
     /// @brief Converts a sequence of bytes to an integer
     /// @param input The sequence of bytes to convert
     /// @return The result of the conversion
-    static int bytesToInt(bytes input);
+    static int bytesToInt(const bytes& input);
 };

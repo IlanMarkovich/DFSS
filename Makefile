@@ -1,5 +1,6 @@
 CXX		  := g++
 CXX_FLAGS := -Wall -Wextra -std=c++17 -ggdb
+TEST_FLAG := -DTEST
 
 BIN		:= bin
 SRC		:= src
@@ -16,7 +17,7 @@ run: clean all
 	./$(BIN)/$(EXECUTABLE)
 
 $(BIN)/$(EXECUTABLE): $(SRC)/*.cpp
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(shell pkg-config --cflags --libs libmongocxx) -Wl,-rpath,/usr/local/lib
+	$(CXX) $(CXX_FLAGS) $(TEST_FLAG) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(shell pkg-config --cflags --libs libmongocxx) -Wl,-rpath,/usr/local/lib
 
 clean:
 	-rm $(BIN)/*

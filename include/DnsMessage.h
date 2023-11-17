@@ -11,8 +11,8 @@ using std::string;
 struct Query
 {
     string name;
-    int queryType;
-    bytes dnsClass;
+    int type;
+    bytes queryClass;
 };
 
 class DnsMessage
