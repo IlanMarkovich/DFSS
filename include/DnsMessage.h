@@ -43,5 +43,9 @@ public:
 private:
     // Methods
 
+    /// @brief Reads a portion of a bytes sequence (reffered as message) from a certain index
+    /// @param message The sequence of bytes being read from
+    /// @param i The index which the function starts to read from
+    /// @return The new sequence read from the message
     bytes readPortionFromMessage(const bytes& message, int& i);
 };

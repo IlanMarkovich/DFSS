@@ -22,9 +22,46 @@ DnsMessage::DnsMessage(const bytes& message)
     }
 
     bytes queryType = readPortionFromMessage(message, ++i);
-    bytes dnsClass = readPortionFromMessage(message, ++i);
+    bytes dnsClass = readPortionFromMessage(message, i);
 
     _query = (Query){ queryName, ByteHelper::bytesToInt(queryType), dnsClass };
+}
+
+// Getters
+
+bytes DnsMessage::getTransactionId() const
+{
+    return _transactionId;
+}
+
+bytes DnsMessage::getFlags() const
+{
+    return _flags;
+}
+
+int DnsMessage::getQuestions() const
+{
+    return ByteHelper::bytesToInt(_questions);
+}
+
+int DnsMessage::getAnswers_RRs() const
+{
+    return ByteHelper::bytesToInt(_answers_RRs);
+}
+
+int DnsMessage::getAuthority_RRs() const
+{
+    return ByteHelper::bytesToInt(_authority_RRs);
+}
+
+int DnsMessage::getAdditional_RRs() const
+{
+    return ByteHelper::bytesToInt(_additional_RRs);
+}
+
+Query DnsMessage::getQuery() const
+{
+    return _query;
 }
 
 // Private Methods
