@@ -1,19 +1,18 @@
 #pragma once
 
-#include <vector>
 #include <string>
 
-#define byte unsigned char
-#define bytes std::vector<byte>
+#include "ByteHelper.h"
 
-using std::vector;
+#define DNS_PROPERTY_SIZE 2
+
 using std::string;
 
 struct Query
 {
     string name;
     int queryType;
-    int dnsClass;
+    bytes dnsClass;
 };
 
 class DnsMessage
@@ -22,15 +21,15 @@ private:
     // Fields
     bytes _transactionId;
     bytes _flags;
-    int _questions;
-    int _answers_RRs;
-    int _authority_RRs;
-    int _additional_RRs;
-    vector<Query> _queries;
+    bytes _questions;
+    bytes _answers_RRs;
+    bytes _authority_RRs;
+    bytes _additional_RRs;
+    Query _query;
 
 public:
     // C'tor
-    DnsMessage(const bytes& originalMessage);
+    DnsMessage(const bytes& message);
 
     // Getters
     bytes getTransactionId() const;
@@ -39,5 +38,10 @@ public:
     int getAnswers_RRs() const;
     int getAuthority_RRs() const;
     int getAdditional_RRs() const;
-    vector<Query> getQueries() const;
+    Query getQuery() const;
+
+private:
+    // Methods
+
+    bytes readPortionFromMessage(const bytes& message, int& i);
 };
