@@ -3,7 +3,9 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/usr/local/include/mongocxx/v_noabi",
+                "/usr/local/include/bsoncxx/v_noabi"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
