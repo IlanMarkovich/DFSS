@@ -10,14 +10,14 @@ class DatabaseManager
 {
 private:
     // FIELDS
-    mongocxx::instance inst;
-    mongocxx::client client;
-    mongocxx::database db;
+    mongocxx::instance _inst;
+    mongocxx::client _client;
+    mongocxx::database _db;
 
 public:
     // C'tor
     DatabaseManager();
 
     // Methods
-    void pingDatabase() const;
+    void pingDatabase();
 };
