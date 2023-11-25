@@ -28,5 +28,8 @@ public:
     /// @brief Pings the database and prints when successful
     void pingDatabase() const;
 
+    /// @brief Searches a URL in the database and determines if the url is there
+    /// @param url The searched URL
+    /// @return Is the URL in the database
     bool searchUrl(const string& url) const;
 };
