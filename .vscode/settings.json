@@ -2,5 +2,6 @@
     "files.associations": {
         "optional": "cpp",
         "sstream": "cpp"
-    }
+    },
+    "C_Cpp.dimInactiveRegions": false
 }
