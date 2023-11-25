@@ -23,7 +23,7 @@ int main()
 int main()
 {   
     DatabaseManager dbManager;
-    dbManager.pingDatabase();
+    std::cout << "Has www.google.com: " << dbManager.searchUrl("www.google.com") << std::endl;
 
     return 0;
 }
