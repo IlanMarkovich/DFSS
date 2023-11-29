@@ -1,3 +1,5 @@
+#pragma once
+
 #include "MyException.h"
 
 class SocketBindException : public MyException

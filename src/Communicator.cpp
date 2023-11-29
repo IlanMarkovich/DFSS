@@ -20,13 +20,12 @@ Communicator::Communicator()
     /* Bind the IP address and the port number to create the socket */
     if (bind (fd, (sockaddr*)&dns_Server_addr, sizeof (dns_Server_addr)) == -1) 
     {
-        throw SocketBindException();
+        throw new SocketBindException();
     }
 }
 
 void Communicator::listen()
 {
-    int threadno = 0;
     /* Infinte server loop */
     while (true)
     {
@@ -38,9 +37,10 @@ void Communicator::listen()
         bzero (r, sizeof (req));  // Clear memory
         r->addlen = sizeof(r->clientaddr);
 
+        
         /* waiting to recieve the requests from client at port */
         recvlen = recvfrom (fd, buf, MESSAGE_SIZE, 0, (sockaddr*) &r->clientaddr, &r->addlen);
-
+        
         /* Filling the parameter values of the threaded function */
         r->des = fd;
         strcpy (r->str, buf);
@@ -53,5 +53,5 @@ void Communicator::listen()
 
 void Communicator::bind_user(req* r)
 {
-    
+    std::cerr << r->str << std::endl;
 }

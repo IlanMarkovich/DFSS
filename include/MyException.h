@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 
 class MyException : public std::exception

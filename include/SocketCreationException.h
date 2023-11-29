@@ -1,6 +1,8 @@
+#pragma once
+
 #include "MyException.h"
 
-class socketCreationException : public MyException
+class SocketCreationException : public MyException
 {
     public:
         virtual const char* what() override;

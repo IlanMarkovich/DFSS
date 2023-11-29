@@ -17,7 +17,7 @@
 #define MESSAGE_SIZE 2048
 
 // declare the struct sockaddr_in
-struct sockaddr_in sin;
+struct sockaddr_in;
 
 
 struct req
