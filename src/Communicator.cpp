@@ -43,7 +43,7 @@ void Communicator::listen()
         
         /* Filling the parameter values of the threaded function */
         r->des = fd;
-        strcpy (r->str, buf);
+        r->data = ByteHelper::charArrTobytes(buf, recvlen);
 
         memset (buf, 0, sizeof (buf)); // clear buffer
 
@@ -53,5 +53,5 @@ void Communicator::listen()
 
 void Communicator::bind_user(req* r)
 {
-    std::cerr << r->str << std::endl;
+    
 }

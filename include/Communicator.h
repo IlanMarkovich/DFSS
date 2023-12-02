@@ -12,9 +12,9 @@
 #include "SocketCreationException.h"
 #include "SocketBindException.h"
 #include "ThreadManager.h"
-
+#include "ByteHelper.h"
 #define PORT 53
-#define MESSAGE_SIZE 2048
+#define MESSAGE_SIZE 256
 
 // declare the struct sockaddr_in
 struct sockaddr_in;
@@ -23,7 +23,7 @@ struct sockaddr_in;
 struct req
 {
     int des;
-    char str[MESSAGE_SIZE]; // place holder for the data
+    bytes data; // place holder for the data
     socklen_t addlen;
     sockaddr_in clientaddr;
 };
