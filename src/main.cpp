@@ -9,9 +9,9 @@ int main()
         Server server;
         server.run();
     }
-    catch(MyException* e)
+    catch(MyException& e)
     {
-        std::cerr << e->what() << '\n';
+        std::cerr << e.what() << '\n';
     }
     return 0;
 }

@@ -31,7 +31,7 @@ void ByteHelper::printBytes(const bytes& byteVec)
     std::cout << std::dec;
 }
 
-bytes charArrTobytes(const char input[], int size)
+bytes ByteHelper::charArrTobytes(const char input[], int size)
 {
     bytes result;
     for(int i = 0; i < size;i++)
@@ -40,3 +40,4 @@ bytes charArrTobytes(const char input[], int size)
     }
     return result;
 }
+

@@ -9,10 +9,13 @@
 #include <netinet/in.h>
 #include <cstring>
 #include <stdio.h>
-#include "SocketCreationException.h"
-#include "SocketBindException.h"
+#include <arpa/inet.h>
 #include "ThreadManager.h"
 #include "ByteHelper.h"
+#include "GetFromDistantDnsException.h"
+#include "SendToDistantDnsException.h"
+#include "SocketCreationException.h"
+#include "SocketBindException.h"
 #define PORT 53
 #define MESSAGE_SIZE 256
 
@@ -37,7 +40,7 @@ class Communicator
         ThreadManager m_threadManager;
 
         void bind_user(req* r);
-
+        bytes DomainIPFetcher(bytes& input);
     public:
         // C tor
         Communicator();

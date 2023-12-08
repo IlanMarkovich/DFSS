@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
+#include <memory>
 
 #define byte unsigned char
 #define bytes std::vector<byte>
