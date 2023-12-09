@@ -1,5 +1,6 @@
 {
     "files.associations": {
+<<<<<<< HEAD
         "array": "cpp",
         "atomic": "cpp",
         "bit": "cpp",
@@ -47,6 +48,10 @@
         "typeinfo": "cpp",
         "ctime": "cpp",
         "iomanip": "cpp",
+=======
+        "optional": "cpp",
+>>>>>>> c3f23262b52bd39235d222ea62f34ef7efa0ba1a
         "sstream": "cpp"
-    }
+    },
+    "C_Cpp.dimInactiveRegions": false
 }
