@@ -12,15 +12,15 @@ struct Query
 {
     string name;
     int type;
-    bytes queryClass;
+    std::vector<unsigned char> queryClass;
 };
 
 class DnsMessage
 {
 private:
     // Fields
-    bytes _transactionId;
-    bytes _flags;
+    std::vector<unsigned char> _transactionId;
+    std::vector<unsigned char> _flags;
     int _questions;
     int _answers_RRs;
     int _authority_RRs;
@@ -29,11 +29,11 @@ private:
 
 public:
     // C'tor
-    DnsMessage(const bytes& message);
+    DnsMessage(const std::vector<unsigned char>& message);
 
     // Getters
-    bytes getTransactionId() const;
-    bytes getFlags() const;
+    std::vector<unsigned char> getTransactionId() const;
+    std::vector<unsigned char> getFlags() const;
     int getQuestions() const;
     int getAnswers_RRs() const;
     int getAuthority_RRs() const;
@@ -47,5 +47,5 @@ private:
     /// @param message The sequence of bytes being read from
     /// @param i The index which the function starts to read from
     /// @return The new sequence read from the message
-    bytes readPortionFromMessage(const bytes& message, int& i);
+    std::vector<unsigned char> readPortionFromMessage(const std::vector<unsigned char>& message, int& i);
 };

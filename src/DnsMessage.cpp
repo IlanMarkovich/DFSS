@@ -1,7 +1,7 @@
 #include "DnsMessage.h"
 
 // C'tor
-DnsMessage::DnsMessage(const bytes& message)
+DnsMessage::DnsMessage(const std::vector<unsigned char>& message)
 {
     int i = 0;
     
@@ -24,20 +24,20 @@ DnsMessage::DnsMessage(const bytes& message)
         i++;
     }
 
-    bytes type = readPortionFromMessage(message, ++i);
-    bytes queryClass = readPortionFromMessage(message, i);
+    std::vector<unsigned char> type = readPortionFromMessage(message, ++i);
+    std::vector<unsigned char> queryClass = readPortionFromMessage(message, i);
 
     _query = (Query){ queryName, ByteHelper::bytesToInt(type), queryClass };
 }
 
 // Getters
 
-bytes DnsMessage::getTransactionId() const
+std::vector<unsigned char> DnsMessage::getTransactionId() const
 {
     return _transactionId;
 }
 
-bytes DnsMessage::getFlags() const
+std::vector<unsigned char> DnsMessage::getFlags() const
 {
     return _flags;
 }
@@ -69,10 +69,10 @@ Query DnsMessage::getQuery() const
 
 // Private Methods
 
-bytes DnsMessage::readPortionFromMessage(const bytes& message, int& i)
+std::vector<unsigned char> DnsMessage::readPortionFromMessage(const std::vector<unsigned char>& message, int& i)
 {
     int destIndex = i + DNS_PROPERTY_SIZE;
-    bytes out;
+    std::vector<unsigned char> out;
 
     for(; i < destIndex; i++)
     {

@@ -53,14 +53,14 @@ void Communicator::listen()
 
 void Communicator::bind_user(req* r)
 {
-    bytes response = this->DomainIPFetcher(r->data);
+    std::vector<unsigned char> response = this->DomainIPFetcher(r->data);
 
     // Send the response back to the client
     sendto(fd, response.data(), response.size(), 0, (struct sockaddr*)&r->clientaddr, sizeof(r->clientaddr));
 }
 
 
-bytes Communicator::DomainIPFetcher(bytes& input)
+std::vector<unsigned char> Communicator::DomainIPFetcher(std::vector<unsigned char>& input)
 {
     const char* dns_server = "8.8.8.8";
     const int dns_port = 53;

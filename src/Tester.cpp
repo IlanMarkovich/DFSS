@@ -7,7 +7,7 @@ using std::endl;
 
 // Public Methods
 
-void Tester::dnsSerialization(const bytes& message)
+void Tester::dnsSerialization(const std::vector<unsigned char>& message)
 {
     DnsMessage dns_msg(message);
 

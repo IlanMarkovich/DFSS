@@ -26,7 +26,7 @@ struct sockaddr_in;
 struct req
 {
     int des;
-    bytes data; // place holder for the data
+    std::vector<unsigned char> data; // place holder for the data
     socklen_t addlen;
     sockaddr_in clientaddr;
 };
@@ -40,7 +40,7 @@ class Communicator
         ThreadManager m_threadManager;
 
         void bind_user(req* r);
-        bytes DomainIPFetcher(bytes& input);
+        std::vector<unsigned char> DomainIPFetcher(std::vector<unsigned char>& input);
     public:
         // C tor
         Communicator();
