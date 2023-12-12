@@ -2,8 +2,9 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <thread>
 
-#include "DatabaseServerCreationException.h"
+#include "SocketBindException.h"
 
 // C'tor
 DatabaseManager::DatabaseManager()
@@ -18,14 +19,19 @@ DatabaseManager::DatabaseManager()
     // Setup the connection.
     _external_client = mongocxx::client{ uri, client_options };
 
-    // Execute the command for starting the server
-    string databaseServerCommand = "mongod --dbpath " + string(ITE_URI);
-    int result = system(databaseServerCommand.c_str());
-
-    if(result != OK)
-        throw DatabaseServerCreationException();
+    string dbServerCommand = "mongod --dbpath " + string(ITE_URI);
+    std::thread dbServerThread(system, dbServerCommand.c_str());
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    dbServerThread.detach();
 
     _iternal_client = mongocxx::client{ mongocxx::uri{}, client_options };
+}
+
+// D'tor
+DatabaseManager::~DatabaseManager()
+{
+    // Shuts down the iternal database server
+    system("(echo 'use admin' ; echo 'db.shutdownServer()') | mongosh");
 }
 
 // Public Methods

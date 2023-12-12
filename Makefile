@@ -17,7 +17,7 @@ run: clean all
 	./$(BIN)/$(EXECUTABLE)
 
 $(BIN)/$(EXECUTABLE): $(SRC)/*.cpp
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(shell pkg-config --cflags --libs libmongocxx) -Wl,-rpath,/usr/local/lib
+	$(CXX) $(CXX_FLAGS) $(TEST_FLAG) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(shell pkg-config --cflags --libs libmongocxx) -Wl,-rpath,/usr/local/lib
 
 clean:
 	-rm $(BIN)/*

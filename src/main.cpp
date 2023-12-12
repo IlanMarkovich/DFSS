@@ -1,6 +1,6 @@
 #include <iostream>
 #include "Server.h"
-#include "MyException.h"
+#include "ServerException.h"
 
 #include "DatabaseManager.h"
 
@@ -13,7 +13,7 @@ int main()
         Server server;
         server.run();
     }
-    catch(MyException& e)
+    catch(ServerException& e)
     {
         std::cerr << e.what() << '\n';
     }
@@ -23,7 +23,7 @@ int main()
 int main()
 {   
     DatabaseManager dbManager;
-    std::cout << "Has www.google.com: " << dbManager.searchUrl("www.google.com") << std::endl;
+    //std::cout << "Has www.google.com: " << dbManager.searchUrl("www.google.com") << std::endl;
 
     return 0;
 }
