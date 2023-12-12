@@ -8,7 +8,9 @@
 
 #include <string>
 
-#define URI "mongodb+srv://ADMIN:Pass123@iep-db.dc3povw.mongodb.net/?retryWrites=true&w=majority"
+#define EXT_URI "mongodb+srv://ADMIN:Pass123@iep-db.dc3povw.mongodb.net/?retryWrites=true&w=majority"
+#define ITE_URI "./db"
+#define OK 0
 
 using std::string;
 
@@ -17,7 +19,8 @@ class DatabaseManager
 private:
     // FIELDS
     mongocxx::instance _inst;
-    mongocxx::client _client;
+    mongocxx::client _external_client;
+    mongocxx::client _iternal_client;
 
 public:
     // C'tor
