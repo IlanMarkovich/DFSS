@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/usr/local/include/mongocxx/v_noabi",
-                "/usr/local/include/bsoncxx/v_noabi"
+                "/usr/local/include/bsoncxx/v_noabi",
+                "${workspaceFolder}/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

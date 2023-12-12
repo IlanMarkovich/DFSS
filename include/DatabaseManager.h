@@ -26,6 +26,9 @@ public:
     // C'tor
     DatabaseManager();
 
+    // D'tor
+    ~DatabaseManager();
+
     // Methods
     
     /// @brief Pings the database and prints when successful

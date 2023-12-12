@@ -4,6 +4,6 @@
 
 class ServerException : public std::exception
 {
-    public:
-        virtual const char* what() = 0;
+public:
+    virtual const char* what() = 0;
 };
