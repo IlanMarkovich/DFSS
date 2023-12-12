@@ -1,11 +1,14 @@
 #include "DatabaseManager.h"
 
 #include <iostream>
+#include <cstdlib>
+
+#include "DatabaseServerCreationException.h"
 
 // C'tor
 DatabaseManager::DatabaseManager()
 {
-    const auto uri = mongocxx::uri{URI};
+    const auto uri = mongocxx::uri{EXT_URI};
 
     // Set the version of the Stable API on the client.
     mongocxx::options::client client_options;
@@ -13,7 +16,16 @@ DatabaseManager::DatabaseManager()
     client_options.server_api_opts(api);
     
     // Setup the connection.
-    _client = mongocxx::client{ uri, client_options };
+    _external_client = mongocxx::client{ uri, client_options };
+
+    // Execute the command for starting the server
+    string databaseServerCommand = "mongod --dbpath " + string(ITE_URI);
+    int result = system(databaseServerCommand.c_str());
+
+    if(result != OK)
+        throw DatabaseServerCreationException();
+
+    _iternal_client = mongocxx::client{ mongocxx::uri{}, client_options };
 }
 
 // Public Methods
@@ -22,7 +34,7 @@ void DatabaseManager::pingDatabase() const
 {
     try
     {
-        auto db = _client["admin"];
+        auto db = _external_client["admin"];
 
         const auto ping_cmd = bsoncxx::builder::basic::make_document(bsoncxx::builder::basic::kvp("ping", 1));
         db.run_command(ping_cmd.view());
@@ -36,7 +48,7 @@ void DatabaseManager::pingDatabase() const
 
 bool DatabaseManager::searchUrl(const string& url) const
 {
-    auto db = _client["Filter-DB"];
+    auto db = _external_client["Filter-DB"];
     
     bsoncxx::builder::stream::document filter;
     filter << "url" << url;
