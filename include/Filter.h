@@ -18,4 +18,7 @@ public:
 
     // Getter
     bool getFilterResult() const;
+
+private:
+    bool databaseFilter() const;
 };

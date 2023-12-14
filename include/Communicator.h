@@ -10,12 +10,15 @@
 #include <cstring>
 #include <stdio.h>
 #include <arpa/inet.h>
+
 #include "ThreadManager.h"
 #include "ByteHelper.h"
 #include "GetFromDistantDnsException.h"
 #include "SendToDistantDnsException.h"
 #include "SocketCreationException.h"
 #include "SocketBindException.h"
+#include "DnsMessage.h"
+
 #define PORT 53
 #define MESSAGE_SIZE 256
 
@@ -27,6 +30,7 @@ struct req
 {
     int des;
     std::vector<unsigned char> data; // place holder for the data
+    std::unique_ptr<DnsMessage> dnsMsg;
     socklen_t addlen;
     sockaddr_in clientaddr;
 };
