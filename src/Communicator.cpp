@@ -1,5 +1,7 @@
 #include "Communicator.h"
 
+#include "Filter.h"
+
 
 Communicator::Communicator()
 {
@@ -43,7 +45,8 @@ void Communicator::listen()
         
         /* Filling the parameter values of the threaded function */
         r->des = fd;
-        r->data = ByteHelper::charArrTobytes(buf, recvlen);
+        r->data = std::vector<unsigned char>(buf, buf + recvlen);
+        r->dnsMsg = std::make_unique<DnsMessage>(r->data);
 
         memset (buf, 0, sizeof (buf)); // clear buffer
 
@@ -53,6 +56,14 @@ void Communicator::listen()
 
 void Communicator::bind_user(req* r)
 {
+    Filter filter(*(r->dnsMsg.get()));
+
+    // If the DNS message isn't valid
+    if(!filter.getFilterResult())
+    {
+        return;
+    }
+
     std::vector<unsigned char> response = this->DomainIPFetcher(r->data);
 
     // Send the response back to the client

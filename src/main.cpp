@@ -22,9 +22,6 @@ int main()
 #else
 int main()
 {   
-    DatabaseManager dbManager;
-    //std::cout << "Has www.google.com: " << dbManager.searchUrlExternal("www.google.com") << std::endl;
-
     return 0;
 }
 #endif

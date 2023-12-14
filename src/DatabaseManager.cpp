@@ -35,7 +35,7 @@ DatabaseManager::~DatabaseManager()
 
 // Public Methods
 
-void DatabaseManager::pingDatabase() const
+void DatabaseManager::pingExternalDatabase() const
 {
     try
     {

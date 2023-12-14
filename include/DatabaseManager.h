@@ -32,7 +32,7 @@ public:
     // Methods
     
     /// @brief Pings the database and prints when successful
-    void pingDatabase() const;
+    void pingExternalDatabase() const;
 
     /// @brief Searches a URL in the external database and determines if the url is there
     /// @param url The searched URL
