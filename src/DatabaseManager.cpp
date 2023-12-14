@@ -4,8 +4,6 @@
 #include <cstdlib>
 #include <thread>
 
-#include "SocketBindException.h"
-
 // C'tor
 DatabaseManager::DatabaseManager()
 {
@@ -16,12 +14,13 @@ DatabaseManager::DatabaseManager()
     const auto api = mongocxx::options::server_api{mongocxx::options::server_api::version::k_version_1};
     client_options.server_api_opts(api);
     
-    // Setup the connection.
+    // Setup the connection to the external DB
     _external_client = mongocxx::client{ uri, client_options };
 
+    // Host the MongoDB server using 'mongod' command in another thread
     string dbServerCommand = "mongod --dbpath " + string(ITE_URI);
     std::thread dbServerThread(system, dbServerCommand.c_str());
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::seconds(1)); // Waits a second for the server to fully initialize before detaching the thread
     dbServerThread.detach();
 
     _iternal_client = mongocxx::client{ mongocxx::uri{}, client_options };
