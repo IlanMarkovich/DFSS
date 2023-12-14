@@ -23,7 +23,7 @@ DatabaseManager::DatabaseManager()
     std::this_thread::sleep_for(std::chrono::seconds(1)); // Waits a second for the server to fully initialize before detaching the thread
     dbServerThread.detach();
 
-    _iternal_client = mongocxx::client{ mongocxx::uri{}, client_options };
+    _internal_client = mongocxx::client{ mongocxx::uri{}, client_options };
 }
 
 // D'tor
@@ -51,13 +51,29 @@ void DatabaseManager::pingDatabase() const
     }
 }
 
-bool DatabaseManager::searchUrl(const string& url) const
+bool DatabaseManager::searchUrlExternal(const string& url) const
 {
-    auto db = _external_client["Filter-DB"];
-    
+    return queryUrl(url, _external_client, "External-URLs");
+}
+
+bool DatabaseManager::isUrlBlacklisted(const string & url) const
+{
+    return queryUrl(url, _internal_client, "Blacklist_URLs");
+}
+
+bool DatabaseManager::isUrlWhitelisted(const string & url) const
+{
+    return queryUrl(url, _internal_client, "Whitelist_URLs");
+}
+
+// Private Methods
+
+bool DatabaseManager::queryUrl(const string& url, const mongocxx::client& dbClient, const string& collection) const
+{
+    auto db = dbClient["Filter-DB"];
+
     bsoncxx::builder::stream::document filter;
     filter << "url" << url;
 
-    auto query = db["External-URLs"].find_one(filter.view());
-    return query ? true : false;
+    return db[collection].find_one(filter.view()) ? true : false;
 }

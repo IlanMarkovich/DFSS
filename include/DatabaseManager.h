@@ -17,10 +17,10 @@ using std::string;
 class DatabaseManager
 {
 private:
-    // FIELDS
+    // Fields
     mongocxx::instance _inst;
     mongocxx::client _external_client;
-    mongocxx::client _iternal_client;
+    mongocxx::client _internal_client;
 
 public:
     // C'tor
@@ -34,8 +34,26 @@ public:
     /// @brief Pings the database and prints when successful
     void pingDatabase() const;
 
-    /// @brief Searches a URL in the database and determines if the url is there
+    /// @brief Searches a URL in the external database and determines if the url is there
     /// @param url The searched URL
-    /// @return Is the URL in the database
-    bool searchUrl(const string& url) const;
+    /// @return Is the URL in the external database
+    bool searchUrlExternal(const string& url) const;
+
+    /// @brief Checks if a `url` is blacklisted by the user
+    /// @param url The URL being checked
+    /// @return Is `url` blacklisted
+    bool isUrlBlacklisted(const string& url) const;
+
+    /// @brief Checks if a `url` is whitelisted by the user
+    /// @param url The URL being checked
+    /// @return Is `url` whitelisted
+    bool isUrlWhitelisted(const string& url) const;
+
+private:
+    /// @brief Queries a DB to see if a certain `url` exists in the collection `collection`
+    /// @param url The URL being queried
+    /// @param dbClient The client which performs the query
+    /// @param collection The collection in the DB which is being searched
+    /// @return Is `url` in the `collection` in the `Filter-DB` database?
+    bool queryUrl(const string& url, const mongocxx::client& dbClient, const string& collection) const;
 };
