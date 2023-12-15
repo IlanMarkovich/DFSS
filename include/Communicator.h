@@ -10,6 +10,7 @@
 #include <cstring>
 #include <stdio.h>
 #include <arpa/inet.h>
+#include <atomic>
 
 #include "ThreadManager.h"
 #include "ByteHelper.h"
@@ -44,6 +45,7 @@ class Communicator
         const int port = PORT;
         ThreadManager m_threadManager;
         DatabaseManager _dbManager;
+        std::atomic<bool> _listen;
 
         void bind_user(req* r);
         std::vector<unsigned char> DomainIPFetcher(std::vector<unsigned char>& input);
@@ -52,6 +54,5 @@ class Communicator
         Communicator();
 
         void listen();
-        
-        
+        void stopListening();
 };

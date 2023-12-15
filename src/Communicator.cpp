@@ -2,8 +2,11 @@
 
 #include "Filter.h"
 
+#include <thread>
 
+// C'tor
 Communicator::Communicator()
+ : _listen(true)
 {
 
     /* Create socket */
@@ -24,12 +27,21 @@ Communicator::Communicator()
     {
         throw SocketBindException();
     }
+
+    // Set a timeout to the socket, so that when 'recvfrom' is used it will have a maximum time
+    // before it will stop trying to get input from the listening socket
+    struct timeval tv;
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
 }
+
+// Public Methods
 
 void Communicator::listen()
 {
     /* Infinte server loop */
-    while (true)
+    while (_listen.load())
     {
         int recvlen = 0;
         char buf[MESSAGE_SIZE]; // Hold buffer sent in udp packet
@@ -39,20 +51,30 @@ void Communicator::listen()
         bzero (r, sizeof (req));  // Clear memory
         r->addlen = sizeof(r->clientaddr);
 
-        
         /* waiting to recieve the requests from client at port */
         recvlen = recvfrom (fd, buf, MESSAGE_SIZE, 0, (sockaddr*) &r->clientaddr, &r->addlen);
         
-        /* Filling the parameter values of the threaded function */
-        r->des = fd;
-        r->data = std::vector<unsigned char>(buf, buf + recvlen);
-        r->dnsMsg = std::make_unique<DnsMessage>(r->data);
+        if(recvlen > 0)
+        {
+            /* Filling the parameter values of the threaded function */
+            r->des = fd;
+            r->data = std::vector<unsigned char>(buf, buf + recvlen);
+            r->dnsMsg = std::make_unique<DnsMessage>(r->data);
+
+            bind_user(r);
+        }
 
         memset (buf, 0, sizeof (buf)); // clear buffer
-
-        bind_user(r);
+        delete r;
     }
 }
+
+void Communicator::stopListening()
+{
+    _listen.store(false);
+}
+
+// Private Methods
 
 void Communicator::bind_user(req* r)
 {
@@ -103,5 +125,5 @@ std::vector<unsigned char> Communicator::DomainIPFetcher(std::vector<unsigned ch
 
     // Close the socket
     close(sockfd);
-    return ByteHelper::charArrTobytes(response, received_bytes);
+    return std::vector<unsigned char>(response, response + received_bytes);
 }
