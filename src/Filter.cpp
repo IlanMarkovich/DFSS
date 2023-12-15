@@ -1,7 +1,8 @@
 #include "Filter.h"
 
 // C'tor
-Filter::Filter(const DnsMessage & dnsReq) : _dnsReq(dnsReq)
+Filter::Filter(const DnsMessage & dnsReq, const DatabaseManager& dbManagger)
+ : _dnsReq(dnsReq), _dbManager(dbManagger)
 {
     _filterResult = databaseFilter();
 }

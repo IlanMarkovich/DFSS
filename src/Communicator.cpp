@@ -56,10 +56,10 @@ void Communicator::listen()
 
 void Communicator::bind_user(req* r)
 {
-    Filter filter(*(r->dnsMsg.get()));
+    Filter filter(*(r->dnsMsg.get()), _dbManager);
 
     // If the DNS message isn't valid
-    if(!filter.getFilterResult())
+    if(filter.getFilterResult())
     {
         return;
     }
