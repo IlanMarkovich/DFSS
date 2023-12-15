@@ -16,7 +16,5 @@ public:
     /// @brief Prints the given vector of bytes as hexadecimal
     /// @param byteVec the bytes which wil be printed
     static void printBytes(const std::vector<unsigned char>& byteVec);
-
-    static std::vector<unsigned char> charArrTobytes(const char input[], int size);
 };
 

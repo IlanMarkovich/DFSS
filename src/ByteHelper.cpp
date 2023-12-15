@@ -31,13 +31,3 @@ void ByteHelper::printBytes(const std::vector<unsigned char>& byteVec)
     std::cout << std::dec;
 }
 
-std::vector<unsigned char> ByteHelper::charArrTobytes(const char input[], int size)
-{
-    std::vector<unsigned char> result;
-    for(int i = 0; i < size;i++)
-    {
-        result.push_back(input[i]);
-    }
-    return result;
-}
-
