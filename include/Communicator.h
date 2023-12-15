@@ -18,6 +18,7 @@
 #include "SocketCreationException.h"
 #include "SocketBindException.h"
 #include "DnsMessage.h"
+#include "DatabaseManager.h"
 
 #define PORT 53
 #define MESSAGE_SIZE 256
@@ -42,6 +43,7 @@ class Communicator
         sockaddr_in dns_Server_addr;
         const int port = PORT;
         ThreadManager m_threadManager;
+        DatabaseManager _dbManager;
 
         void bind_user(req* r);
         std::vector<unsigned char> DomainIPFetcher(std::vector<unsigned char>& input);
