@@ -66,14 +66,45 @@ bool DatabaseManager::isUrlWhitelisted(const string & url) const
     return queryUrl(url, _internal_client, "Whitelist_URLs");
 }
 
+void DatabaseManager::cacheDnsQuery(const struct Query& dnsQuery, bool isValid) const
+{
+    //Construct a document from `dnsMsg` for the `cache` collection
+    document doc = buildDnsQueryDocument(dnsQuery);
+    doc << "valid" << isValid;
+
+    _internal_client[DB]["Cache"].insert_one(doc.view());
+}
+
+std::optional<bool> DatabaseManager::cacheQueryValidation(const struct Query & dnsQuery) const
+{
+    document filter = buildDnsQueryDocument(dnsQuery);
+    
+    // If found the according query in the database return if it was filtered as valid
+    if(auto document = _internal_client[DB]["Cache"].find_one(filter.view()))
+    {
+        return std::optional<bool>((bool)(document.value()["valid"]));
+    }
+
+    // If no query was matched from the cache return an empty optional variable
+    return std::optional<bool>();
+}
+
 // Private Methods
 
 bool DatabaseManager::queryUrl(const string& url, const mongocxx::client& dbClient, const string& collection) const
 {
-    auto db = dbClient["Filter-DB"];
-
-    bsoncxx::builder::stream::document filter;
+    document filter;
     filter << "url" << url;
 
-    return db[collection].find_one(filter.view()) ? true : false;
+    return dbClient[DB][collection].find_one(filter.view()) ? true : false;
+}
+
+document DatabaseManager::buildDnsQueryDocument(const Query & dnsQuery) const
+{
+    document doc;
+    doc << "name" << dnsQuery.name;
+    doc << "type" << dnsQuery.type;
+    doc << "class" << string(reinterpret_cast<const char*>(dnsQuery.queryClass.data()));
+
+    return doc;
 }

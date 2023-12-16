@@ -7,12 +7,17 @@
 #include <mongocxx/uri.hpp>
 
 #include <string>
+#include <optional>
+
+#include "DnsMessage.h"
 
 #define EXT_URI "mongodb+srv://ADMIN:Pass123@iep-db.dc3povw.mongodb.net/?retryWrites=true&w=majority"
 #define ITE_URI "./db"
-#define OK 0
+#define DB "Filter-DB"
 
 using std::string;
+using bsoncxx::builder::stream::document;
+
 
 class DatabaseManager
 {
@@ -49,6 +54,16 @@ public:
     /// @return Is `url` whitelisted
     bool isUrlWhitelisted(const string& url) const;
 
+    /// @brief After a DNS query have been filtered, store it in the cache collection
+    /// @param dnsQuery The DNS query that was filtered
+    /// @param isValid Is `dnsQuery` valid
+    void cacheDnsQuery(const struct Query& dnsQuery, bool isValid) const;
+
+    /// @brief Search for a certain query in the cache and returns its validation
+    /// @param dnsQuery The DNS query being searched for
+    /// @return An optional variable (if there is a value it's in the cache)
+    std::optional<bool> cacheQueryValidation(const struct Query& dnsQuery) const;
+
 private:
     /// @brief Queries a DB to see if a certain `url` exists in the collection `collection`
     /// @param url The URL being queried
@@ -56,4 +71,9 @@ private:
     /// @param collection The collection in the DB which is being searched
     /// @return Is `url` in the `collection` in the `Filter-DB` database?
     bool queryUrl(const string& url, const mongocxx::client& dbClient, const string& collection) const;
+
+    /// @brief Build a `bsoncxx::builder::stream::document` from a DNS query
+    /// @param dnsQuery The DNS query which the function builds a document for
+    /// @return The document made from `dnsQuery`
+    document buildDnsQueryDocument(const struct Query& dnsQuery) const;
 };
