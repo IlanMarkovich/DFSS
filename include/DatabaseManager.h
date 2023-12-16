@@ -56,13 +56,13 @@ public:
 
     /// @brief After a DNS query have been filtered, store it in the cache collection
     /// @param dnsQuery The DNS query that was filtered
-    /// @param isValid Is `dnsQuery` valid
-    void cacheDnsQuery(const struct Query& dnsQuery, bool isValid) const;
+    /// @param filterResult `dnsQuery`'s filter result
+    void cacheDnsQuery(const struct Query& dnsQuery, bool filterResult) const;
 
-    /// @brief Search for a certain query in the cache and returns its validation
+    /// @brief Search for a certain query in the cache and returns its previous filter result
     /// @param dnsQuery The DNS query being searched for
     /// @return An optional variable (if there is a value it's in the cache)
-    std::optional<bool> cacheQueryValidation(const struct Query& dnsQuery) const;
+    std::optional<bool> cacheQueryFilterResult(const struct Query& dnsQuery) const;
 
 private:
     /// @brief Queries a DB to see if a certain `url` exists in the collection `collection`

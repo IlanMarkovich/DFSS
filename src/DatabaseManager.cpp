@@ -66,23 +66,24 @@ bool DatabaseManager::isUrlWhitelisted(const string & url) const
     return queryUrl(url, _internal_client, "Whitelist_URLs");
 }
 
-void DatabaseManager::cacheDnsQuery(const struct Query& dnsQuery, bool isValid) const
+void DatabaseManager::cacheDnsQuery(const struct Query& dnsQuery, bool filterResult) const
 {
     //Construct a document from `dnsMsg` for the `cache` collection
     document doc = buildDnsQueryDocument(dnsQuery);
-    doc << "valid" << isValid;
+    doc << "Filter_Result" << filterResult;
 
     _internal_client[DB]["Cache"].insert_one(doc.view());
 }
 
-std::optional<bool> DatabaseManager::cacheQueryValidation(const struct Query & dnsQuery) const
+std::optional<bool> DatabaseManager::cacheQueryFilterResult(const struct Query & dnsQuery) const
 {
     document filter = buildDnsQueryDocument(dnsQuery);
+    struct core::v1::optional<bsoncxx::v_noabi::document::value> doc;
     
     // If found the according query in the database return if it was filtered as valid
-    if(auto document = _internal_client[DB]["Cache"].find_one(filter.view()))
+    if(doc = _internal_client[DB]["Cache"].find_one(filter.view()))
     {
-        return std::optional<bool>((bool)(document.value()["valid"]));
+        return std::optional<bool>(doc->operator[]("Filter_Result").get_bool().value);
     }
 
     // If no query was matched from the cache return an empty optional variable
