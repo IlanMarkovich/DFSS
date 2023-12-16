@@ -2,10 +2,13 @@
 
 #include <thread>
 
-Server::Server() : m_communicator()
-{
-    
-}
+// Static variables initialization
+std::mutex Server::dbMutex;
+
+// C'tor
+Server::Server() : m_communicator() {}
+
+// Public Methods
 
 void Server::run()
 {
@@ -16,8 +19,31 @@ void Server::run()
     {
         std::cout << "Enter Command: ";
         std::cin >> cmd;
+
+        if(cmd != "exit")
+            handleCommand(cmd);
     }
 
     m_communicator.stopListening();
     listeningThread.join();
+}
+
+// Private Methods
+
+void Server::handleCommand(const string & cmd)
+{
+    string url;
+    std::cout << std::endl << "Enter URL: ";
+    std::cin >> url;
+
+    if(cmd == "bl")
+    {
+        std::lock_guard<std::mutex> dbLock(dbMutex);
+        m_communicator.getDatabaseManager().blacklistUrl(url);
+    }
+    else if(cmd == "wl")
+    {
+        std::lock_guard<std::mutex> dbLock(dbMutex);
+        m_communicator.getDatabaseManager().whitelistUrl(url);
+    }
 }

@@ -39,20 +39,26 @@ struct req
 
 class Communicator
 {
-    private:
-        int fd;
-        sockaddr_in dns_Server_addr;
-        const int port = PORT;
-        ThreadManager m_threadManager;
-        DatabaseManager _dbManager;
-        std::atomic<bool> _listen;
+private:
+    int fd;
+    sockaddr_in dns_Server_addr;
+    const int port = PORT;
+    ThreadManager m_threadManager;
+    DatabaseManager _dbManager;
+    std::atomic<bool> _listen;
 
-        void bind_user(req* r);
-        std::vector<unsigned char> DomainIPFetcher(std::vector<unsigned char>& input);
-    public:
-        // C tor
-        Communicator();
+    void bind_user(req* r);
+    std::vector<unsigned char> DomainIPFetcher(std::vector<unsigned char>& input);
+public:
+    // C tor
+    Communicator();
 
-        void listen();
-        void stopListening();
+    // Getters
+
+    DatabaseManager& getDatabaseManager();
+
+    // Methods
+
+    void listen();
+    void stopListening();
 };
