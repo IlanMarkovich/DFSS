@@ -36,6 +36,13 @@ Communicator::Communicator()
     setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
 }
 
+// Getters
+
+DatabaseManager & Communicator::getDatabaseManager()
+{
+    return _dbManager;
+}
+
 // Public Methods
 
 void Communicator::listen()

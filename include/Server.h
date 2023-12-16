@@ -2,11 +2,19 @@
 
 #include "Communicator.h"
 
+#include <mutex>
+
 class Server
 {
-    private:
-        Communicator m_communicator;
-    public:
-        Server();
-        void run();
+public:
+    static std::mutex dbMutex;
+private:
+    Communicator m_communicator;
+
+public:
+    Server();
+    void run();
+
+private:
+    void handleCommand(const string& cmd);
 };

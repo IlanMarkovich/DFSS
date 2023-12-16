@@ -1,5 +1,9 @@
 #include "Filter.h"
 
+#include <mutex>
+
+#include "Server.h"
+
 // C'tor
 Filter::Filter(const DnsMessage & dnsReq, const DatabaseManager & dbManagger)
  : _dnsReq(dnsReq), _dbManager(dbManagger)
@@ -33,6 +37,9 @@ bool Filter::getFilterResult() const
 bool Filter::databaseFilter() const
 {
     string url = _dnsReq.getQuery().name;
+
+    // Protect the `_dbManager` resource which can be accessed by other threads
+    std::lock_guard<std::mutex> dbLock(Server::dbMutex);
 
     return !_dbManager.isUrlWhitelisted(url) &&
     (_dbManager.isUrlBlacklisted(url) || _dbManager.searchUrlExternal(url));

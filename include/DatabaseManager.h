@@ -12,7 +12,7 @@
 #include "DnsMessage.h"
 
 #define EXT_URI "mongodb+srv://ADMIN:Pass123@iep-db.dc3povw.mongodb.net/?retryWrites=true&w=majority"
-#define ITE_URI "./db"
+#define INT_URI "./db"
 #define DB "Filter-DB"
 
 using std::string;
@@ -54,6 +54,14 @@ public:
     /// @return Is `url` whitelisted
     bool isUrlWhitelisted(const string& url) const;
 
+    /// @brief Insert a URL to the blacklist collection
+    /// @param url The URL being inserted
+    void blacklistUrl(const string& url) const;
+
+    /// @brief Insert a URL to the whitelist collection
+    /// @param url The URL being inserted
+    void whitelistUrl(const string& url) const;
+
     /// @brief After a DNS query have been filtered, store it in the cache collection
     /// @param dnsQuery The DNS query that was filtered
     /// @param filterResult `dnsQuery`'s filter result
@@ -76,4 +84,9 @@ private:
     /// @param dnsQuery The DNS query which the function builds a document for
     /// @return The document made from `dnsQuery`
     document buildDnsQueryDocument(const struct Query& dnsQuery) const;
+
+    /// @brief List a certain URL in either the blacklist collection or the whitelist collection
+    /// @param url The URL being insterted to either of the collections
+    /// @param collection The collection `url` being inserted to
+    void listUrl(const string& url, const string& collection) const;
 };

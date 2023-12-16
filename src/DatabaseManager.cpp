@@ -18,7 +18,7 @@ DatabaseManager::DatabaseManager()
     _external_client = mongocxx::client{ uri, client_options };
 
     // Host the MongoDB server using 'mongod' command in another thread
-    string dbServerCommand = "mongod --dbpath " + string(ITE_URI);
+    string dbServerCommand = "mongod --dbpath " + string(INT_URI);
     std::thread dbServerThread(system, dbServerCommand.c_str());
     std::this_thread::sleep_for(std::chrono::seconds(1)); // Waits a second for the server to fully initialize before detaching the thread
     dbServerThread.detach();
@@ -61,12 +61,22 @@ bool DatabaseManager::searchUrlExternal(const string& url) const
 
 bool DatabaseManager::isUrlBlacklisted(const string & url) const
 {
-    return queryUrl(url, _internal_client, "Blacklist_URLs");
+    return queryUrl(url, _internal_client, "Blacklist-URLs");
 }
 
 bool DatabaseManager::isUrlWhitelisted(const string & url) const
 {
-    return queryUrl(url, _internal_client, "Whitelist_URLs");
+    return queryUrl(url, _internal_client, "Whitelist-URLs");
+}
+
+void DatabaseManager::blacklistUrl(const string & url) const
+{
+    listUrl(url, "Blacklist-URLs");
+}
+
+void DatabaseManager::whitelistUrl(const string & url) const
+{
+    listUrl(url, "Whitelist-URLs");
 }
 
 void DatabaseManager::cacheDnsQuery(const struct Query& dnsQuery, bool filterResult) const
@@ -111,4 +121,18 @@ document DatabaseManager::buildDnsQueryDocument(const Query & dnsQuery) const
     doc << "class" << string(reinterpret_cast<const char*>(dnsQuery.queryClass.data()));
 
     return doc;
+}
+
+void DatabaseManager::listUrl(const string & url, const string & collection) const
+{
+    if(isUrlBlacklisted(url) || isUrlWhitelisted(url))
+    {
+        std::cerr << "URL already listed!" << std::endl;
+        return;
+    }
+
+    document doc;
+    doc << "url" << url;
+
+    _internal_client[DB][collection].insert_one(doc.view());
 }
