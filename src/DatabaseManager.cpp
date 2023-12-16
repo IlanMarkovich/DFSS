@@ -29,7 +29,10 @@ DatabaseManager::DatabaseManager()
 // D'tor
 DatabaseManager::~DatabaseManager()
 {
-    // Shuts down the iternal database server
+    // Deletes the content of the cache collection
+    _internal_client[DB]["Cache"].delete_many(bsoncxx::document::view_or_value());
+
+    // Shuts down the internal database server
     system("(echo 'use admin' ; echo 'db.shutdownServer()') | mongosh");
 }
 
