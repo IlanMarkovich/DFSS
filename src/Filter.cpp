@@ -6,11 +6,11 @@ Filter::Filter(const DnsMessage & dnsReq, const DatabaseManager & dbManagger)
 {
     // Check if the DNS request's query is saved in the cache collection
     {
-        std::optional<bool> validation;
+        std::optional<bool> prevFilterResult;
 
-        if((validation = _dbManager.cacheQueryValidation(dnsReq.getQuery())).has_value())
+        if((prevFilterResult = _dbManager.cacheQueryFilterResult(dnsReq.getQuery())).has_value())
         {
-            _filterResult = validation.value();
+            _filterResult = prevFilterResult.value();
             return;
         }
     }
