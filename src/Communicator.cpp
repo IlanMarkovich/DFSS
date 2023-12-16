@@ -31,7 +31,7 @@ Communicator::Communicator()
     // Set a timeout to the socket, so that when 'recvfrom' is used it will have a maximum time
     // before it will stop trying to get input from the listening socket
     struct timeval tv;
-    tv.tv_sec = 1;
+    tv.tv_sec = 5;
     tv.tv_usec = 0;
     setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
 }
@@ -40,12 +40,10 @@ Communicator::Communicator()
 
 void Communicator::listen()
 {
-    /* Infinte server loop */
     while (_listen.load())
     {
         int recvlen = 0;
         char buf[MESSAGE_SIZE]; // Hold buffer sent in udp packet
-
 
         req *r = new req;  // allocate memory for the soon to be request
         bzero (r, sizeof (req));  // Clear memory
