@@ -13,7 +13,8 @@
 
 #define EXT_URI "mongodb+srv://ADMIN:Pass123@iep-db.dc3povw.mongodb.net/?retryWrites=true&w=majority"
 #define INT_URI "./db"
-#define DB "Filter-DB"
+#define FILTER_DB "Filter-DB"
+#define MAX_CACHE_URL 5000
 
 using std::string;
 using bsoncxx::builder::stream::document;

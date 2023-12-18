@@ -4,6 +4,9 @@
 #include <cstdlib>
 #include <thread>
 
+// Ignore warning at lines 32-35 where initalizing the Cache collection
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 // C'tor
 DatabaseManager::DatabaseManager()
 {
@@ -24,13 +27,19 @@ DatabaseManager::DatabaseManager()
     dbServerThread.detach();
 
     _internal_client = mongocxx::client{ mongocxx::uri{}, client_options };
+    
+    // Create the cache collection at the star
+    mongocxx::options::create_collection cache_options;
+    cache_options.capped(true);
+    cache_options.size(MAX_CACHE_URL);
+    _internal_client[FILTER_DB].create_collection("Cache", cache_options);
 }
 
 // D'tor
 DatabaseManager::~DatabaseManager()
 {
     // Deletes the content of the cache collection
-    _internal_client[DB]["Cache"].delete_many(bsoncxx::document::view_or_value());
+    _internal_client[FILTER_DB]["Cache"].drop();
 
     // Shuts down the internal database server
     system("(echo 'use admin' ; echo 'db.shutdownServer()') | mongosh");
@@ -85,7 +94,7 @@ void DatabaseManager::cacheDnsQuery(const struct Query& dnsQuery, bool filterRes
     document doc = buildDnsQueryDocument(dnsQuery);
     doc << "Filter_Result" << filterResult;
 
-    _internal_client[DB]["Cache"].insert_one(doc.view());
+    _internal_client[FILTER_DB]["Cache"].insert_one(doc.view());
 }
 
 std::optional<bool> DatabaseManager::cacheQueryFilterResult(const struct Query & dnsQuery) const
@@ -94,7 +103,7 @@ std::optional<bool> DatabaseManager::cacheQueryFilterResult(const struct Query &
     struct core::v1::optional<bsoncxx::v_noabi::document::value> doc;
     
     // If found the according query in the database return if it was filtered as valid
-    if(doc = _internal_client[DB]["Cache"].find_one(filter.view()))
+    if(doc = _internal_client[FILTER_DB]["Cache"].find_one(filter.view()))
     {
         return std::optional<bool>(doc->operator[]("Filter_Result").get_bool().value);
     }
@@ -110,7 +119,7 @@ bool DatabaseManager::queryUrl(const string& url, const mongocxx::client& dbClie
     document filter;
     filter << "url" << url;
 
-    return dbClient[DB][collection].find_one(filter.view()) ? true : false;
+    return dbClient[FILTER_DB][collection].find_one(filter.view()) ? true : false;
 }
 
 document DatabaseManager::buildDnsQueryDocument(const Query & dnsQuery) const
@@ -134,5 +143,5 @@ void DatabaseManager::listUrl(const string & url, const string & collection) con
     document doc;
     doc << "url" << url;
 
-    _internal_client[DB][collection].insert_one(doc.view());
+    _internal_client[FILTER_DB][collection].insert_one(doc.view());
 }
