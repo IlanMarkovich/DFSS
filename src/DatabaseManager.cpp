@@ -3,8 +3,9 @@
 #include <iostream>
 #include <cstdlib>
 #include <thread>
+#include <ctime>
 
-// Ignore warning at lines 32-35 where initalizing the Cache collection
+// Ignore warning at the lines where initalizing the Cache collection in the c'tor
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 // C'tor
@@ -31,13 +32,16 @@ DatabaseManager::DatabaseManager()
     // Create the cache collection at the star
     mongocxx::options::create_collection cache_options;
     cache_options.capped(true);
-    cache_options.size(MAX_CACHE_URL);
+    cache_options.size(MAX_CACHE_SIZE);
     _internal_client[FILTER_DB].create_collection("Cache", cache_options);
 }
 
 // D'tor
 DatabaseManager::~DatabaseManager()
 {
+    // Logs this session
+    log();
+
     // Deletes the content of the cache collection
     _internal_client[FILTER_DB]["Cache"].drop();
 
@@ -63,41 +67,50 @@ void DatabaseManager::pingExternalDatabase() const
     }
 }
 
-bool DatabaseManager::searchUrlExternal(const string& url) const
+bool DatabaseManager::searchUrlExternal(const string& url)
 {
     return queryUrl(url, _external_client, "External-URLs");
 }
 
-bool DatabaseManager::isUrlBlacklisted(const string & url) const
+bool DatabaseManager::isUrlBlacklisted(const string & url, bool isFiltering)
 {
-    return queryUrl(url, _internal_client, "Blacklist-URLs");
+    bool isBlacklisted = queryUrl(url, _internal_client, "Blacklist-URLs");
+    _blacklistBlocks += (isBlacklisted && isFiltering);
+
+    return isBlacklisted;
 }
 
-bool DatabaseManager::isUrlWhitelisted(const string & url) const
+bool DatabaseManager::isUrlWhitelisted(const string & url, bool isFiltering)
 {
-    return queryUrl(url, _internal_client, "Whitelist-URLs");
+    bool isWhitelisted = (_whitelistBlocks += queryUrl(url, _internal_client, "Whitelist-URLs"));
+    _whitelistBlocks = (isWhitelisted && isFiltering);
+
+    return isWhitelisted;
 }
 
-void DatabaseManager::blacklistUrl(const string & url) const
+void DatabaseManager::blacklistUrl(const string & url)
 {
     listUrl(url, "Blacklist-URLs");
 }
 
-void DatabaseManager::whitelistUrl(const string & url) const
+void DatabaseManager::whitelistUrl(const string & url)
 {
     listUrl(url, "Whitelist-URLs");
 }
 
-void DatabaseManager::cacheDnsQuery(const struct Query& dnsQuery, bool filterResult) const
+void DatabaseManager::cacheDnsQuery(const struct Query& dnsQuery, bool filterResult)
 {
     //Construct a document from `dnsMsg` for the `cache` collection
     document doc = buildDnsQueryDocument(dnsQuery);
-    doc << "Filter_Result" << filterResult;
+    doc << "filter_result" << filterResult;
+
+    std::time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    doc << "time" << std::ctime(&currentTime);
 
     _internal_client[FILTER_DB]["Cache"].insert_one(doc.view());
 }
 
-std::optional<bool> DatabaseManager::cacheQueryFilterResult(const struct Query & dnsQuery) const
+std::optional<bool> DatabaseManager::cacheQueryFilterResult(const struct Query & dnsQuery)
 {
     document filter = buildDnsQueryDocument(dnsQuery);
     struct core::v1::optional<bsoncxx::v_noabi::document::value> doc;
@@ -105,7 +118,8 @@ std::optional<bool> DatabaseManager::cacheQueryFilterResult(const struct Query &
     // If found the according query in the database return if it was filtered as valid
     if(doc = _internal_client[FILTER_DB]["Cache"].find_one(filter.view()))
     {
-        return std::optional<bool>(doc->operator[]("Filter_Result").get_bool().value);
+        _cacheBlocks++;
+        return std::optional<bool>(doc->operator[]("filter_result").get_bool().value);
     }
 
     // If no query was matched from the cache return an empty optional variable
@@ -132,9 +146,9 @@ document DatabaseManager::buildDnsQueryDocument(const Query & dnsQuery) const
     return doc;
 }
 
-void DatabaseManager::listUrl(const string & url, const string & collection) const
+void DatabaseManager::listUrl(const string & url, const string & collection)
 {
-    if(isUrlBlacklisted(url) || isUrlWhitelisted(url))
+    if(isUrlBlacklisted(url, false) || isUrlWhitelisted(url, false))
     {
         std::cerr << "URL already listed!" << std::endl;
         return;
@@ -144,4 +158,24 @@ void DatabaseManager::listUrl(const string & url, const string & collection) con
     doc << "url" << url;
 
     _internal_client[FILTER_DB][collection].insert_one(doc.view());
+}
+
+void DatabaseManager::log() const
+{
+    document doc;
+    doc << "blacklist_blocks" << _blacklistBlocks;
+    doc << "whitelist_blocks" << _whitelistBlocks;
+    doc << "cache_blocks" << _cacheBlocks;
+    doc << "external_blocks" << _externalBlocks;
+    doc << "amount_of_requests" << Filter::requestAmount;
+
+    bsoncxx::builder::basic::array arrBuilder;
+
+    for(auto&& doc : _internal_client[FILTER_DB]["Cache"].find({}))
+    {
+        arrBuilder.append(doc);
+    }
+
+    doc << "queries_logs" << arrBuilder;
+    _internal_client[LOG_DB]["Logs"].insert_one(doc.view());
 }

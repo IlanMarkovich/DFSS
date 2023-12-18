@@ -3,18 +3,23 @@
 #include "DnsMessage.h"
 #include "DatabaseManager.h"
 
+// Circular Dependency
+class DatabaseManager;
+
 
 class Filter
 {
-private:
+public:
     // Fields
+    static int requestAmount;
+private:
     DnsMessage _dnsReq;
-    const DatabaseManager& _dbManager;
+    DatabaseManager& _dbManager;
     bool _filterResult;
 
 public:
     // C'tor
-    Filter(const DnsMessage& dnsReq, const DatabaseManager& dbManager);
+    Filter(const DnsMessage& dnsReq, DatabaseManager& dbManager);
 
     // Getter
     bool getFilterResult() const;
