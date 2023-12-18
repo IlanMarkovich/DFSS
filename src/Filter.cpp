@@ -1,11 +1,13 @@
 #include "Filter.h"
 
 #include <mutex>
+#include <fstream>
 
 #include "Server.h"
 
 // Init static variables
 int Filter::requestAmount = 0;
+int Filter::externalBlocks = 0;
 
 // C'tor
 Filter::Filter(const DnsMessage & dnsReq, DatabaseManager & dbManagger)
@@ -24,7 +26,8 @@ Filter::Filter(const DnsMessage & dnsReq, DatabaseManager & dbManagger)
         }
     }
 
-    _filterResult = databaseFilter();
+    _filterResult = databaseFilter()
+        || externalUrlFilter();
 
     // Cache the query and the result in the cache collection in the database
     _dbManager.cacheDnsQuery(dnsReq.getQuery(), _filterResult);
@@ -46,6 +49,27 @@ bool Filter::databaseFilter() const
     // Protect the `_dbManager` resource which can be accessed by other threads
     std::lock_guard<std::mutex> dbLock(Server::dbMutex);
 
-    return !_dbManager.isUrlWhitelisted(url, true) &&
-    (_dbManager.isUrlBlacklisted(url, true) || _dbManager.searchUrlExternal(url));
+    return !_dbManager.isUrlWhitelisted(url, true) && _dbManager.isUrlBlacklisted(url, true);
+}
+
+bool Filter::externalUrlFilter() const
+{
+    bool result = false;
+
+    std::ifstream file("./ext_url.txt");
+    string url;
+
+    // Search for the url in the malicious URL file
+    while(std::getline(file, url) && !result)
+    {
+        if(_dnsReq.getQuery().name == url)
+        {
+            externalBlocks++;
+            result = true;
+        }
+    }
+
+    file.close();
+
+    return result;
 }

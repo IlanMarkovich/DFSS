@@ -12,6 +12,7 @@ class Filter
 public:
     // Fields
     static int requestAmount;
+    static int externalBlocks;
 private:
     DnsMessage _dnsReq;
     DatabaseManager& _dbManager;
@@ -25,5 +26,8 @@ public:
     bool getFilterResult() const;
 
 private:
+    // Methods
+
     bool databaseFilter() const;
+    bool externalUrlFilter() const;
 };
