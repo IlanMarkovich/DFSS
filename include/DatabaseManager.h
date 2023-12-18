@@ -103,7 +103,7 @@ private:
     void listUrl(const string& url, const string& collection);
 
     /// @brief Taks the fields of this class, information from the cache collection and more
-    /// to log this session of the firewall (activates in d'tor)
+    /// to log this session of the firewall (activates automatically in d'tor)
     /// By saving using the cache it will save the last `MAX_CACHE_SIZE` requests
-    void log() const;
+    void log();
 };
