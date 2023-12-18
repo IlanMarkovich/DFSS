@@ -42,7 +42,7 @@ DatabaseManager::~DatabaseManager()
     // Logs this session
     log();
 
-    // Deletes the content of the cache collection
+    // Drops the cache collection
     _internal_client[FILTER_DB]["Cache"].drop();
 
     // Shuts down the internal database server
@@ -160,7 +160,7 @@ void DatabaseManager::listUrl(const string & url, const string & collection)
     _internal_client[FILTER_DB][collection].insert_one(doc.view());
 }
 
-void DatabaseManager::log() const
+void DatabaseManager::log()
 {
     document doc;
     doc << "blacklist_blocks" << _blacklistBlocks;
@@ -178,4 +178,12 @@ void DatabaseManager::log() const
 
     doc << "queries_logs" << arrBuilder;
     _internal_client[LOG_DB]["Logs"].insert_one(doc.view());
+
+    // Reset the variables and the cache collection
+    _blacklistBlocks = 0;
+    _whitelistBlocks = 0;
+    _cacheBlocks = 0;
+    _externalBlocks = 0;
+    Filter::requestAmount = 0;
+    _internal_client[FILTER_DB]["Cache"].delete_many(bsoncxx::v_noabi::document::view_or_value());
 }
