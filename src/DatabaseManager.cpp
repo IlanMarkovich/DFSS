@@ -10,30 +10,26 @@
 
 // C'tor
 DatabaseManager::DatabaseManager()
+ : _blacklistBlocks(0), _whitelistBlocks(0), _cacheBlocks(0)
 {
-    const auto uri = mongocxx::uri{EXT_URI};
-
     // Set the version of the Stable API on the client.
     mongocxx::options::client client_options;
     const auto api = mongocxx::options::server_api{mongocxx::options::server_api::version::k_version_1};
     client_options.server_api_opts(api);
-    
-    // Setup the connection to the external DB
-    _external_client = mongocxx::client{ uri, client_options };
 
     // Host the MongoDB server using 'mongod' command in another thread
-    string dbServerCommand = "mongod --dbpath " + string(INT_URI);
+    string dbServerCommand = "mongod --dbpath " + string(URI);
     std::thread dbServerThread(system, dbServerCommand.c_str());
     std::this_thread::sleep_for(std::chrono::seconds(1)); // Waits a second for the server to fully initialize before detaching the thread
     dbServerThread.detach();
 
-    _internal_client = mongocxx::client{ mongocxx::uri{}, client_options };
+    _connection = mongocxx::client{ mongocxx::uri{}, client_options };
     
     // Create the cache collection at the star
     mongocxx::options::create_collection cache_options;
     cache_options.capped(true);
     cache_options.size(MAX_CACHE_SIZE);
-    _internal_client[FILTER_DB].create_collection("Cache", cache_options);
+    _connection[FILTER_DB].create_collection("Cache", cache_options);
 }
 
 // D'tor
@@ -43,7 +39,7 @@ DatabaseManager::~DatabaseManager()
     log();
 
     // Drops the cache collection
-    _internal_client[FILTER_DB]["Cache"].drop();
+    _connection[FILTER_DB]["Cache"].drop();
 
     // Shuts down the internal database server
     system("(echo 'use admin' ; echo 'db.shutdownServer()') | mongosh");
@@ -51,30 +47,9 @@ DatabaseManager::~DatabaseManager()
 
 // Public Methods
 
-void DatabaseManager::pingExternalDatabase() const
-{
-    try
-    {
-        auto db = _external_client["admin"];
-
-        const auto ping_cmd = bsoncxx::builder::basic::make_document(bsoncxx::builder::basic::kvp("ping", 1));
-        db.run_command(ping_cmd.view());
-        std::cout << "Pinged your deployment. You successfully connected to the database!" << std::endl;
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-}
-
-bool DatabaseManager::searchUrlExternal(const string& url)
-{
-    return queryUrl(url, _external_client, "External-URLs");
-}
-
 bool DatabaseManager::isUrlBlacklisted(const string & url, bool isFiltering)
 {
-    bool isBlacklisted = queryUrl(url, _internal_client, "Blacklist-URLs");
+    bool isBlacklisted = queryUrl(url, "Blacklist-URLs");
     _blacklistBlocks += (isBlacklisted && isFiltering);
 
     return isBlacklisted;
@@ -82,8 +57,8 @@ bool DatabaseManager::isUrlBlacklisted(const string & url, bool isFiltering)
 
 bool DatabaseManager::isUrlWhitelisted(const string & url, bool isFiltering)
 {
-    bool isWhitelisted = (_whitelistBlocks += queryUrl(url, _internal_client, "Whitelist-URLs"));
-    _whitelistBlocks = (isWhitelisted && isFiltering);
+    bool isWhitelisted = (_whitelistBlocks += queryUrl(url, "Whitelist-URLs"));
+    _whitelistBlocks += (isWhitelisted && isFiltering);
 
     return isWhitelisted;
 }
@@ -107,7 +82,7 @@ void DatabaseManager::cacheDnsQuery(const struct Query& dnsQuery, bool filterRes
     std::time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     doc << "time" << std::ctime(&currentTime);
 
-    _internal_client[FILTER_DB]["Cache"].insert_one(doc.view());
+    _connection[FILTER_DB]["Cache"].insert_one(doc.view());
 }
 
 std::optional<bool> DatabaseManager::cacheQueryFilterResult(const struct Query & dnsQuery)
@@ -116,7 +91,7 @@ std::optional<bool> DatabaseManager::cacheQueryFilterResult(const struct Query &
     struct core::v1::optional<bsoncxx::v_noabi::document::value> doc;
     
     // If found the according query in the database return if it was filtered as valid
-    if(doc = _internal_client[FILTER_DB]["Cache"].find_one(filter.view()))
+    if(doc = _connection[FILTER_DB]["Cache"].find_one(filter.view()))
     {
         _cacheBlocks++;
         return std::optional<bool>(doc->operator[]("filter_result").get_bool().value);
@@ -128,12 +103,12 @@ std::optional<bool> DatabaseManager::cacheQueryFilterResult(const struct Query &
 
 // Private Methods
 
-bool DatabaseManager::queryUrl(const string& url, const mongocxx::client& dbClient, const string& collection) const
+bool DatabaseManager::queryUrl(const string& url, const string& collection) const
 {
     document filter;
     filter << "url" << url;
 
-    return dbClient[FILTER_DB][collection].find_one(filter.view()) ? true : false;
+    return _connection[FILTER_DB][collection].find_one(filter.view()) ? true : false;
 }
 
 document DatabaseManager::buildDnsQueryDocument(const Query & dnsQuery) const
@@ -157,7 +132,7 @@ void DatabaseManager::listUrl(const string & url, const string & collection)
     document doc;
     doc << "url" << url;
 
-    _internal_client[FILTER_DB][collection].insert_one(doc.view());
+    _connection[FILTER_DB][collection].insert_one(doc.view());
 }
 
 void DatabaseManager::log()
@@ -166,24 +141,24 @@ void DatabaseManager::log()
     doc << "blacklist_blocks" << _blacklistBlocks;
     doc << "whitelist_blocks" << _whitelistBlocks;
     doc << "cache_blocks" << _cacheBlocks;
-    doc << "external_blocks" << _externalBlocks;
+    doc << "external_blocks" << Filter::externalBlocks;
     doc << "amount_of_requests" << Filter::requestAmount;
 
     bsoncxx::builder::basic::array arrBuilder;
 
-    for(auto&& doc : _internal_client[FILTER_DB]["Cache"].find({}))
+    for(auto&& doc : _connection[FILTER_DB]["Cache"].find({}))
     {
         arrBuilder.append(doc);
     }
 
     doc << "queries_logs" << arrBuilder;
-    _internal_client[LOG_DB]["Logs"].insert_one(doc.view());
+    _connection[LOG_DB]["Logs"].insert_one(doc.view());
 
     // Reset the variables and the cache collection
     _blacklistBlocks = 0;
     _whitelistBlocks = 0;
     _cacheBlocks = 0;
-    _externalBlocks = 0;
+    Filter::externalBlocks = 0;
     Filter::requestAmount = 0;
-    _internal_client[FILTER_DB]["Cache"].delete_many(bsoncxx::v_noabi::document::view_or_value());
+    _connection[FILTER_DB]["Cache"].delete_many(bsoncxx::v_noabi::document::view_or_value());
 }

@@ -18,8 +18,10 @@
 #include "SendToDistantDnsException.h"
 #include "SocketCreationException.h"
 #include "SocketBindException.h"
+
 #include "DnsMessage.h"
 #include "DatabaseManager.h"
+#include "FileLoader.h"
 
 #define PORT 53
 #define MESSAGE_SIZE 256
@@ -46,6 +48,7 @@ private:
     ThreadManager m_threadManager;
     DatabaseManager _dbManager;
     std::atomic<bool> _listen;
+    FileLoader _fileLoader;
 
     void bind_user(req* r);
     std::vector<unsigned char> DomainIPFetcher(std::vector<unsigned char>& input);
