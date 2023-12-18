@@ -4,10 +4,15 @@
 
 #include "Server.h"
 
+// Init static variables
+int Filter::requestAmount = 0;
+
 // C'tor
-Filter::Filter(const DnsMessage & dnsReq, const DatabaseManager & dbManagger)
+Filter::Filter(const DnsMessage & dnsReq, DatabaseManager & dbManagger)
  : _dnsReq(dnsReq), _dbManager(dbManagger)
 {
+    requestAmount++;
+    
     // Check if the DNS request's query is saved in the cache collection
     {
         std::optional<bool> prevFilterResult;
@@ -41,6 +46,6 @@ bool Filter::databaseFilter() const
     // Protect the `_dbManager` resource which can be accessed by other threads
     std::lock_guard<std::mutex> dbLock(Server::dbMutex);
 
-    return !_dbManager.isUrlWhitelisted(url) &&
-    (_dbManager.isUrlBlacklisted(url) || _dbManager.searchUrlExternal(url));
+    return !_dbManager.isUrlWhitelisted(url, true) &&
+    (_dbManager.isUrlBlacklisted(url, true) || _dbManager.searchUrlExternal(url));
 }
