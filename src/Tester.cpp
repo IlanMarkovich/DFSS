@@ -27,7 +27,5 @@ void Tester::dnsSerialization(const std::vector<unsigned char>& message)
     Query query = dns_msg.getQuery();
     cout << "Query name: " << query.name << endl;
     cout << "Query type: " << query.type << endl;
-    cout << "Query class: ";
-    ByteHelper::printBytes(query.queryClass);
     cout << endl;
 }

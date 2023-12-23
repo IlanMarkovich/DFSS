@@ -10,7 +10,7 @@
 
 // C'tor
 DatabaseManager::DatabaseManager()
- : _blacklistBlocks(0), _whitelistBlocks(0), _cacheBlocks(0)
+ : _blacklistUses(0), _whitelistUses(0), _cacheUses(0)
 {
     // Set the version of the Stable API on the client.
     mongocxx::options::client client_options;
@@ -50,15 +50,15 @@ DatabaseManager::~DatabaseManager()
 bool DatabaseManager::isUrlBlacklisted(const string & url, bool isFiltering)
 {
     bool isBlacklisted = queryUrl(url, "Blacklist-URLs");
-    _blacklistBlocks += (isBlacklisted && isFiltering);
+    _blacklistUses += (isBlacklisted && isFiltering);
 
     return isBlacklisted;
 }
 
 bool DatabaseManager::isUrlWhitelisted(const string & url, bool isFiltering)
 {
-    bool isWhitelisted = (_whitelistBlocks += queryUrl(url, "Whitelist-URLs"));
-    _whitelistBlocks += (isWhitelisted && isFiltering);
+    bool isWhitelisted = (_whitelistUses += queryUrl(url, "Whitelist-URLs"));
+    _whitelistUses += (isWhitelisted && isFiltering);
 
     return isWhitelisted;
 }
@@ -93,7 +93,7 @@ std::optional<bool> DatabaseManager::cacheQueryFilterResult(const struct Query &
     // If found the according query in the database return if it was filtered as valid
     if(doc = _connection[FILTER_DB]["Cache"].find_one(filter.view()))
     {
-        _cacheBlocks++;
+        _cacheUses++;
         return std::optional<bool>(doc->operator[]("filter_result").get_bool().value);
     }
 
@@ -116,7 +116,6 @@ document DatabaseManager::buildDnsQueryDocument(const Query & dnsQuery) const
     document doc;
     doc << "name" << dnsQuery.name;
     doc << "type" << dnsQuery.type;
-    doc << "class" << string(reinterpret_cast<const char*>(dnsQuery.queryClass.data()));
 
     return doc;
 }
@@ -138,9 +137,9 @@ void DatabaseManager::listUrl(const string & url, const string & collection)
 void DatabaseManager::log()
 {
     document doc;
-    doc << "blacklist_blocks" << _blacklistBlocks;
-    doc << "whitelist_blocks" << _whitelistBlocks;
-    doc << "cache_blocks" << _cacheBlocks;
+    doc << "blacklist_uses" << _blacklistUses;
+    doc << "whitelist_uses" << _whitelistUses;
+    doc << "cache_uses" << _cacheUses;
     doc << "external_blocks" << Filter::externalBlocks;
     doc << "amount_of_requests" << Filter::requestAmount;
 
@@ -155,9 +154,9 @@ void DatabaseManager::log()
     _connection[LOG_DB]["Logs"].insert_one(doc.view());
 
     // Reset the variables and the cache collection
-    _blacklistBlocks = 0;
-    _whitelistBlocks = 0;
-    _cacheBlocks = 0;
+    _blacklistUses = 0;
+    _whitelistUses = 0;
+    _cacheUses = 0;
     Filter::externalBlocks = 0;
     Filter::requestAmount = 0;
     _connection[FILTER_DB]["Cache"].delete_many(bsoncxx::v_noabi::document::view_or_value());

@@ -30,9 +30,9 @@ private:
     // Fields
     mongocxx::instance _inst;
     mongocxx::client _connection;
-    int _blacklistBlocks;
-    int _whitelistBlocks;
-    int _cacheBlocks;
+    int _blacklistUses;
+    int _whitelistUses;
+    int _cacheUses;
 
 public:
     // C'tor

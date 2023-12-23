@@ -27,7 +27,7 @@ DnsMessage::DnsMessage(const std::vector<unsigned char>& message)
     std::vector<unsigned char> type = readPortionFromMessage(message, ++i);
     std::vector<unsigned char> queryClass = readPortionFromMessage(message, i);
 
-    _query = (Query){ queryName, ByteHelper::bytesToInt(type), queryClass };
+    _query = (Query){ queryName, ByteHelper::bytesToInt(type) };
 }
 
 // Getters

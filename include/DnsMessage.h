@@ -12,7 +12,6 @@ struct Query
 {
     string name;
     int type;
-    std::vector<unsigned char> queryClass;
 };
 
 class DnsMessage
