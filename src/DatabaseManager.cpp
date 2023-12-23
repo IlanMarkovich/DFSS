@@ -73,11 +73,14 @@ void DatabaseManager::whitelistUrl(const string & url)
     listUrl(url, "Whitelist-URLs");
 }
 
-void DatabaseManager::cacheDnsQuery(const struct Query& dnsQuery, bool filterResult)
+void DatabaseManager::cacheDnsQuery(const struct Query& dnsQuery, bool filterResult, const string& filterMethod)
 {
     //Construct a document from `dnsMsg` for the `cache` collection
     document doc = buildDnsQueryDocument(dnsQuery);
     doc << "filter_result" << filterResult;
+
+    if(filterResult)
+        doc << "filter_method" << filterMethod;
 
     std::time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     doc << "time" << std::ctime(&currentTime);

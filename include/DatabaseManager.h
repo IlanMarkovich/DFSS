@@ -66,7 +66,8 @@ public:
     /// @brief After a DNS query have been filtered, store it in the cache collection
     /// @param dnsQuery The DNS query that was filtered
     /// @param filterResult `dnsQuery`'s filter result
-    void cacheDnsQuery(const struct Query& dnsQuery, bool filterResult);
+    /// @param filterMethod A string which contains the method which was being used (if the query was filtered)
+    void cacheDnsQuery(const struct Query& dnsQuery, bool filterResult, const string& filterMethod);
 
     /// @brief Search for a certain query in the cache and returns its previous filter result
     /// @param dnsQuery The DNS query being searched for

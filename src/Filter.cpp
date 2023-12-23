@@ -26,11 +26,17 @@ Filter::Filter(const DnsMessage & dnsReq, DatabaseManager & dbManagger)
         }
     }
 
-    _filterResult = databaseFilter()
-        || externalUrlFilter();
+    bool dbFilter = false, externalFilter = false;
+
+    _filterResult = (dbFilter = databaseFilter())
+        || (externalFilter = externalUrlFilter());
+
+    string filterMethod = dbFilter ? "database"
+        : externalFilter ? "external"
+        : "";
 
     // Cache the query and the result in the cache collection in the database
-    _dbManager.cacheDnsQuery(dnsReq.getQuery(), _filterResult);
+    _dbManager.cacheDnsQuery(dnsReq.getQuery(), _filterResult, filterMethod);
 }
 
 // Getters
