@@ -1,8 +1,8 @@
 #pragma once
 
-#include "MyException.h"
+#include "ServerException.h"
 
-class GetFromDistantDnsException : public MyException
+class GetFromDistantDnsException : public ServerException
 {
     public:
         virtual const char* what() override;

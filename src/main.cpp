@@ -1,7 +1,7 @@
 #include <iostream>
 #include "Server.h"
-#include "MyException.h"
-#include "RegexFilter.h"
+#include "ServerException.h"
+
 #include "DatabaseManager.h"
 
 // If this run is NOT a test
@@ -13,7 +13,7 @@ int main()
         Server server;
         server.run();
     }
-    catch(MyException& e)
+    catch(ServerException& e)
     {
         std::cerr << e.what() << '\n';
     }
@@ -22,18 +22,6 @@ int main()
 #else
 int main()
 {   
-    try
-    {
-        std::string urlOne = "abcdefg";
-        std::string urlTwo = "abcdefgxx";
-        RegexFilter test(urlOne);
-        std::cout << test.Filter(urlTwo);
-    }
-    catch(MyException& e)
-    {
-
-    }
-
     return 0;
 }
 #endif

@@ -10,12 +10,19 @@
 #include <cstring>
 #include <stdio.h>
 #include <arpa/inet.h>
+#include <atomic>
+
 #include "ThreadManager.h"
 #include "ByteHelper.h"
 #include "GetFromDistantDnsException.h"
 #include "SendToDistantDnsException.h"
 #include "SocketCreationException.h"
 #include "SocketBindException.h"
+
+#include "DnsMessage.h"
+#include "DatabaseManager.h"
+#include "FileLoader.h"
+
 #define PORT 53
 #define MESSAGE_SIZE 256
 
@@ -27,25 +34,34 @@ struct req
 {
     int des;
     std::vector<unsigned char> data; // place holder for the data
+    std::unique_ptr<DnsMessage> dnsMsg;
     socklen_t addlen;
     sockaddr_in clientaddr;
 };
 
 class Communicator
 {
-    private:
-        int fd;
-        sockaddr_in dns_Server_addr;
-        const int port = PORT;
-        ThreadManager m_threadManager;
+private:
+    int fd;
+    sockaddr_in dns_Server_addr;
+    const int port = PORT;
+    ThreadManager m_threadManager;
+    DatabaseManager _dbManager;
+    std::atomic<bool> _listen;
+    FileLoader _fileLoader;
 
-        void bind_user(req* r);
-        std::vector<unsigned char> DomainIPFetcher(std::vector<unsigned char>& input);
-    public:
-        // C tor
-        Communicator();
+    void bind_user(req* r);
+    std::vector<unsigned char> DomainIPFetcher(std::vector<unsigned char>& input);
+public:
+    // C tor
+    Communicator();
 
-        void listen();
-        
-        
+    // Getters
+
+    DatabaseManager& getDatabaseManager();
+
+    // Methods
+
+    void listen();
+    void stopListening();
 };
