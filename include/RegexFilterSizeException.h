@@ -1,8 +1,8 @@
 #pragma once
 
-#include "MyException.h"
+#include "ServerException.h"
 
-class RegexFilterSizeException : public MyException
+class RegexFilterSizeException : public ServerException
 {
     public:
         virtual const char* what() override;
