@@ -144,6 +144,7 @@ void DatabaseManager::log()
     doc << "whitelist_uses" << _whitelistUses;
     doc << "cache_uses" << _cacheUses;
     doc << "external_blocks" << Filter::externalBlocks;
+    doc << "phishing_blocks" << Filter::phishingBlocks;
     doc << "amount_of_requests" << Filter::requestAmount;
 
     bsoncxx::builder::basic::array arrBuilder;
@@ -161,6 +162,7 @@ void DatabaseManager::log()
     _whitelistUses = 0;
     _cacheUses = 0;
     Filter::externalBlocks = 0;
+    Filter::phishingBlocks = 0;
     Filter::requestAmount = 0;
     _connection[FILTER_DB]["Cache"].delete_many(bsoncxx::v_noabi::document::view_or_value());
 }

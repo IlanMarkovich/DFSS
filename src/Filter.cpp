@@ -4,10 +4,13 @@
 #include <fstream>
 
 #include "Server.h"
+#include "RegexFilter.h"
+#include "ServerException.h"
 
 // Init static variables
 int Filter::requestAmount = 0;
 int Filter::externalBlocks = 0;
+int Filter::phishingBlocks = 0;
 
 // C'tor
 Filter::Filter(const DnsMessage & dnsReq, DatabaseManager & dbManagger)
@@ -26,13 +29,15 @@ Filter::Filter(const DnsMessage & dnsReq, DatabaseManager & dbManagger)
         }
     }
 
-    bool dbFilter = false, externalFilter = false;
+    bool dbFilter = false, externalFilter = false, phishingFilterVar = false;
 
     _filterResult = (dbFilter = databaseFilter())
-        || (externalFilter = externalUrlFilter());
+        || (externalFilter = externalUrlFilter())
+        || (phishingFilterVar = phishingFilter());
 
     string filterMethod = dbFilter ? "database"
         : externalFilter ? "external"
+        : phishingFilterVar ? "phishing"
         : "";
 
     // Cache the query and the result in the cache collection in the database
@@ -77,5 +82,27 @@ bool Filter::externalUrlFilter() const
 
     file.close();
 
+    return result;
+}
+
+bool Filter::phishingFilter() const
+{
+    bool result = false;
+
+    std::ifstream file("./top_100000_urls.txt");
+    string url;
+
+    RegexFilter filter(_dnsReq.getQuery().name);
+
+    while(std::getline(file, url) && !result)
+    {
+        if(filter.Filter(url))
+        {
+            phishingBlocks++;
+            result = true;
+        }
+    }
+
+    file.close();
     return result;
 }

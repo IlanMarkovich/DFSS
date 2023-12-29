@@ -13,6 +13,7 @@ public:
     // Fields
     static int requestAmount;
     static int externalBlocks;
+    static int phishingBlocks;
 private:
     DnsMessage _dnsReq;
     DatabaseManager& _dbManager;
@@ -30,4 +31,5 @@ private:
 
     bool databaseFilter() const;
     bool externalUrlFilter() const;
+    bool phishingFilter() const;
 };
