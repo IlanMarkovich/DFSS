@@ -2,9 +2,9 @@
 
 RegexFilter::RegexFilter(std::string url)
 {
-    if(url.size() < MIN_LENGTH)
+    if (url.size() < MIN_LENGTH)
     {
-        throw RegexFilterSizeException(); // the string is too small to make assumption
+        throw std::exception(); // the string is too small to make assumption
     }
     this->url = url;
 
@@ -12,26 +12,30 @@ RegexFilter::RegexFilter(std::string url)
     this->regexPatternSame = "^" + url + "$";
     this->regexPatternOneDiffrence = "";
     this->regexPatternTwoDiffrence = "";
-    this->regexPatternLettersAdded = "[" + url + "]*([^" + url + "])[" + url + "]*";
+    this->regexPatternLettersAdded = "^";
 
     for (size_t i = 0; i < url.length(); ++i) {
         regexPatternOneDiffrence += "|^" + url.substr(0, i) + "." + url.substr(i + 1) + "$";
+        regexPatternLettersAdded += url[i];
+        regexPatternLettersAdded += ".*";
+
         for (size_t j = i + 1; j < url.length(); ++j)
         {
             regexPatternTwoDiffrence += "|^" + url.substr(0, i) + "." + url.substr(i + 1, j - i - 1) + "." + url.substr(j + 1) + "$";
         }
     }
+    regexPatternLettersAdded += "";
 }
 
 bool RegexFilter::Filter(std::string url)
 {
-    if(url.size() < MIN_LENGTH)
+    if (url.size() < MIN_LENGTH)
     {
-        throw RegexFilterSizeException(); // the string is too small to make assumption
+        throw std::exception(); // the string is too small to make assumption
     }
-    int LengthDifference = abs(url.size() - this->url.size());
+    int LengthDifference = abs(int(url.size() - this->url.size()));
 
-    if(LengthDifference > 0)
+    if (LengthDifference > 0)
     {
         return FilterDifferentLength(url);
     }
@@ -41,11 +45,11 @@ bool RegexFilter::Filter(std::string url)
 
 bool RegexFilter::FilterSameLength(std::string url)
 {
-    if(std::regex_match(url, std::regex(regexPatternSame))) 
+    if (std::regex_match(url, std::regex(regexPatternSame)))
     {
         return false; // same url
     }
-    if(std::regex_match(url, std::regex(regexPatternTwoDiffrence)) || std::regex_match(url, std::regex(regexPatternOneDiffrence)))
+    if (std::regex_match(url, std::regex(regexPatternTwoDiffrence)) || std::regex_match(url, std::regex(regexPatternOneDiffrence)))
     {
         return true; // one or two characters are wrong is suspicious
     }
@@ -55,14 +59,21 @@ bool RegexFilter::FilterSameLength(std::string url)
 
 bool RegexFilter::FilterDifferentLength(std::string url)
 {
-    int LengthDifference = abs(url.size() - this->url.size());
-    if(LengthDifference > MAX_LENGTH_DIFF) 
+    int LengthDifference = url.size() - this->url.size();
+    if (LengthDifference > MAX_LENGTH_DIFF)
     {
         return false;// the difference is too big to make assumption
     }
-    else if(std::regex_search(url, std::regex(regexPatternLettersAdded)))
+    else if (LengthDifference > 0)
     {
-        return true; // the same url but random charcters have been added 
+        return std::regex_search(url, std::regex(regexPatternLettersAdded)); // the same url but random charcters have been removed 
     }
-    return false;
+
+    std::string regexPatternLettersAddedGivenUrl = "^";
+    for (size_t i = 0; i < url.length(); ++i)
+    {
+        regexPatternLettersAddedGivenUrl += url[i];
+        regexPatternLettersAddedGivenUrl += ".*";
+    }
+    return std::regex_search(this->url, std::regex(regexPatternLettersAddedGivenUrl)); // the same url but random charcters have been added 
 }
