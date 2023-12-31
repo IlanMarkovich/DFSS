@@ -4,8 +4,12 @@
 
 #include "ByteHelper.h"
 #include "DNS_Answer.h"
+#include "DNS_A_Answer.h"
+#include "DNS_RRSIG_Answer.h"
 
 #define DNS_PROPERTY_SIZE 2
+#define DNS_A 1
+#define DNS_RRSIG 46
 
 using std::string;
 
@@ -36,7 +40,11 @@ public:
     // C'tor
     DnsMessage(const std::vector<unsigned char>& message);
 
+    // D'tor
+    ~DnsMessage();
+
     // Getters
+
     std::vector<unsigned char> getTransactionId() const;
     std::vector<unsigned char> getFlags() const;
     int getQueries() const;

@@ -19,6 +19,39 @@ DnsMessage::DnsMessage(const std::vector<unsigned char>& message)
     std::vector<unsigned char> queryClass = readPortionFromMessage(message, i);
 
     _query = (Query){ queryName, ByteHelper::bytesToInt(type), queryClass.data() };
+
+    // Read answers
+    for(int ans = 0; ans < _answers_RRs; ans++)
+    {
+        string answerName = reinterpret_cast<const char*>(readPortionFromMessage(message, i).data());
+
+        // Get the answer type
+        int type = ByteHelper::bytesToInt(DnsMessage::readPortionFromMessage(message, i));
+        i -= DNS_PROPERTY_SIZE;
+
+        DNS_Answer* answer = nullptr;
+
+        switch(type)
+        {
+            case DNS_A:
+                answer = new DNS_A_Answer(answerName, message, i);
+                break;
+            case DNS_RRSIG:
+                answer = new DNS_RRSIG_Answer(answerName, message, i);
+                break;
+        }
+
+        _answers.push_back(answer);
+    }
+}
+
+// D'tor
+DnsMessage::~DnsMessage()
+{
+    for(auto& answer : _answers)
+    {
+        delete answer;
+    }
 }
 
 // Getters
