@@ -9,8 +9,8 @@ DNS_Answer::DNS_Answer(const std::string & name, const std::vector<unsigned char
     // Skip the name because already got it
     index++;
 
-    _type = ByteHelper::bytesToInt(DnsMessage::readPortionFromMessage(dnsMsg, index));
-    _answer_class = DnsMessage::readPortionFromMessage(dnsMsg, index).data();
-    _ttl = ByteHelper::bytesToInt(DnsMessage::readPortionFromMessage(dnsMsg, index, TTL_SIZE));
-    _data_len = ByteHelper::bytesToInt(DnsMessage::readPortionFromMessage(dnsMsg, index));
+    _type = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(dnsMsg, index));
+    _answer_class = DNS_Reader::readPortionFromMessage(dnsMsg, index).data();
+    _ttl = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(dnsMsg, index, TTL_SIZE));
+    _data_len = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(dnsMsg, index));
 }

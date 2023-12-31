@@ -3,10 +3,8 @@
 #include <string>
 #include <vector>
 
-#include "DnsMessage.h"
+#include "DNS_Reader.h"
 #include "ByteHelper.h"
-
-class DnsMessage;
 
 
 class DNS_Answer

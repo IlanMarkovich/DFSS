@@ -6,7 +6,7 @@ DNS_A_Answer::DNS_A_Answer(const std::string& name, const std::vector<unsigned c
 {
     for(int i = 0; i < _data_len; i++)
     {
-        unsigned char c = DnsMessage::readPortionFromMessage(dnsMsg, index, 1)[0];
+        unsigned char c = DNS_Reader::readPortionFromMessage(dnsMsg, index, 1)[0];
         _ip_address += c + '.';
     }
 
