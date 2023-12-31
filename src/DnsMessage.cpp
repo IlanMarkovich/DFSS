@@ -8,26 +8,17 @@ DnsMessage::DnsMessage(const std::vector<unsigned char>& message)
     // Read all fields from the message given as input
     _transactionId = readPortionFromMessage(message, i);
     _flags = readPortionFromMessage(message, i);
-    _questions = ByteHelper::bytesToInt(readPortionFromMessage(message, i));
+    _queries = ByteHelper::bytesToInt(readPortionFromMessage(message, i));
     _answers_RRs = ByteHelper::bytesToInt(readPortionFromMessage(message, i));
     _authority_RRs = ByteHelper::bytesToInt(readPortionFromMessage(message, i));
     _additional_RRs = ByteHelper::bytesToInt(readPortionFromMessage(message, i));
 
-    string queryName;
-    i++;
+    string queryName = readStringFromMessage(message, i);
 
-    // Read query name from the queries
-    while(message[i] != '\0')
-    {
-        // If the char is not a displayable character, insert a dot
-        queryName += message[i] <= '\31' ? '.' : message[i];
-        i++;
-    }
-
-    std::vector<unsigned char> type = readPortionFromMessage(message, ++i);
+    std::vector<unsigned char> type = readPortionFromMessage(message, i);
     std::vector<unsigned char> queryClass = readPortionFromMessage(message, i);
 
-    _query = (Query){ queryName, ByteHelper::bytesToInt(type), queryClass };
+    _query = (Query){ queryName, ByteHelper::bytesToInt(type), queryClass.data() };
 }
 
 // Getters
@@ -42,9 +33,9 @@ std::vector<unsigned char> DnsMessage::getFlags() const
     return _flags;
 }
 
-int DnsMessage::getQuestions() const
+int DnsMessage::getQueries() const
 {
-    return _questions;
+    return _queries;
 }
 
 int DnsMessage::getAnswers_RRs() const
@@ -67,11 +58,11 @@ Query DnsMessage::getQuery() const
     return _query;
 }
 
-// Private Methods
+// Public Methods
 
-std::vector<unsigned char> DnsMessage::readPortionFromMessage(const std::vector<unsigned char>& message, int& i)
+std::vector<unsigned char> DnsMessage::readPortionFromMessage(const std::vector<unsigned char>& message, int& i, int prop_size)
 {
-    int destIndex = i + DNS_PROPERTY_SIZE;
+    int destIndex = i + prop_size;
     std::vector<unsigned char> out;
 
     for(; i < destIndex; i++)
@@ -80,4 +71,18 @@ std::vector<unsigned char> DnsMessage::readPortionFromMessage(const std::vector<
     }
 
     return out;
+}
+
+std::string DnsMessage::readStringFromMessage(const std::vector<unsigned char>& message, int & i)
+{
+    std::string str;
+
+    for(i++ ; message[i] != '\0'; i++)
+    {
+        // If the char is not a displayable character, insert a dot
+        str += message[i] <= '\31' ? '.' : message[i];
+    }
+
+    i++;
+    return str;
 }

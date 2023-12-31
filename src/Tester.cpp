@@ -19,7 +19,7 @@ void Tester::dnsSerialization(const std::vector<unsigned char>& message)
     ByteHelper::printBytes(dns_msg.getFlags());
     cout << endl;
 
-    cout << "Questions: " << dns_msg.getQuestions() << endl;
+    cout << "Questions: " << dns_msg.getQueries() << endl;
     cout << "Answers RRs: " << dns_msg.getAnswers_RRs() << endl;
     cout << "Authority RRs: " << dns_msg.getAuthority_RRs() << endl;
     cout << "Additional RRs: " << dns_msg.getAdditional_RRs() << endl;
@@ -28,6 +28,6 @@ void Tester::dnsSerialization(const std::vector<unsigned char>& message)
     cout << "Query name: " << query.name << endl;
     cout << "Query type: " << query.type << endl;
     cout << "Query class: ";
-    ByteHelper::printBytes(query.queryClass);
+    //ByteHelper::printBytes(query.queryClass);
     cout << endl;
 }

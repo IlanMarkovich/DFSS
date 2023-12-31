@@ -116,7 +116,7 @@ document DatabaseManager::buildDnsQueryDocument(const Query & dnsQuery) const
     document doc;
     doc << "name" << dnsQuery.name;
     doc << "type" << dnsQuery.type;
-    doc << "class" << string(reinterpret_cast<const char*>(dnsQuery.queryClass.data()));
+    doc << "class" << string(reinterpret_cast<const char*>(dnsQuery.queryClass));
 
     return doc;
 }
