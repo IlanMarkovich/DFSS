@@ -71,8 +71,8 @@ std::vector<unsigned char> DnsMessage::getMessageInBytes() const
 
 void DnsMessage::addOPT()
 {
-    const unsigned char* OPT = reinterpret_cast<const unsigned char*>("\x00\x00\x29\x10\x00\x00\x00\x80\x00\x00\x00");
-    _messageInBytes.insert(_messageInBytes.end(), OPT, OPT + sizeof(OPT));
+    const std::vector<unsigned char> OPT = {0x00, 0x00, 0x29, 0x10, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00};
+    _messageInBytes.insert(_messageInBytes.end(), OPT.begin(), OPT.end());
 
     const int ADDITIONAL_RRs_INDEX = 11;
     _messageInBytes[ADDITIONAL_RRs_INDEX] = '\x01';
