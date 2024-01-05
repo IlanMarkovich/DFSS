@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include "Server.h"
+#include "DNSSEC.h"
 
 // Init static variables
 int Filter::requestAmount = 0;
@@ -13,24 +14,27 @@ int Filter::externalBlocks = 0;
 Filter::Filter(const DnsMessage & dnsReq, DatabaseManager & dbManagger)
  : _dnsReq(dnsReq), _dbManager(dbManagger)
 {
-    requestAmount++;
+    /* ---------- COMMENTED FOR DNSSEC TEST ---------- */
+    // requestAmount++;
     
-    // Check if the DNS request's query is saved in the cache collection
-    {
-        std::optional<bool> prevFilterResult;
+    // // Check if the DNS request's query is saved in the cache collection
+    // {
+    //     std::optional<bool> prevFilterResult;
 
-        if((prevFilterResult = _dbManager.cacheQueryFilterResult(dnsReq.getQuery())).has_value())
-        {
-            _filterResult = prevFilterResult.value();
-            return;
-        }
-    }
+    //     if((prevFilterResult = _dbManager.cacheQueryFilterResult(dnsReq.getQuery())).has_value())
+    //     {
+    //         _filterResult = prevFilterResult.value();
+    //         return;
+    //     }
+    // }
 
-    _filterResult = databaseFilter()
-        || externalUrlFilter();
+    // _filterResult = databaseFilter()
+    //     || externalUrlFilter();
 
-    // Cache the query and the result in the cache collection in the database
-    _dbManager.cacheDnsQuery(dnsReq.getQuery(), _filterResult);
+    // // Cache the query and the result in the cache collection in the database
+    // _dbManager.cacheDnsQuery(dnsReq.getQuery(), _filterResult);
+
+    DNSSEC dnssec(dnsReq);
 }
 
 // Getters

@@ -51,7 +51,6 @@ private:
     FileLoader _fileLoader;
 
     void bind_user(req* r);
-    std::vector<unsigned char> DomainIPFetcher(std::vector<unsigned char>& input);
 public:
     // C tor
     Communicator();
@@ -64,4 +63,5 @@ public:
 
     void listen();
     void stopListening();
+    static std::vector<unsigned char> domainIPFetcher(const std::vector<unsigned char>& input);
 };

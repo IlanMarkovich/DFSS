@@ -25,6 +25,8 @@ class DnsMessage
 {
 private:
     // Fields
+
+    std::vector<unsigned char> _messageInBytes;
     std::vector<unsigned char> _transactionId;
     std::vector<unsigned char> _flags;
     int _queries;
@@ -43,11 +45,10 @@ public:
 
     // Getters
 
-    std::vector<unsigned char> getTransactionId() const;
-    std::vector<unsigned char> getFlags() const;
-    int getQueries() const;
-    int getAnswers_RRs() const;
-    int getAuthority_RRs() const;
-    int getAdditional_RRs() const;
     Query getQuery() const;
+    std::vector<unsigned char> getMessageInBytes() const;
+
+    // Methods
+
+    void addOPT();
 };

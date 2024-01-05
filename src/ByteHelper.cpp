@@ -31,3 +31,13 @@ void ByteHelper::printBytes(const std::vector<unsigned char>& byteVec)
     std::cout << std::dec;
 }
 
+std::vector<unsigned char> ByteHelper::intToBytes(int input)
+{
+    std::vector<unsigned char> result(2);
+
+    // Extract the two bytes from the integer
+    result[0] = static_cast<unsigned char>((input >> 8) & 0xFF); // Most significant byte
+    result[1] = static_cast<unsigned char>(input & 0xFF);        // Least significant byte
+
+    return result;
+}
