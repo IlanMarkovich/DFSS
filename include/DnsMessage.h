@@ -7,11 +7,13 @@
 #include "DNS_A_Answer.h"
 #include "DNS_RRSIG_Answer.h"
 #include "DNS_DNSKEY_Answer.h"
+#include "DNS_DS_Answer.h"
 
 #define DNS_PROPERTY_SIZE 2
 #define DNS_A 1
 #define DNS_RRSIG 46
 #define DNS_DNSKEY 48
+#define DNS_DS 43
 
 using std::string;
 
@@ -61,6 +63,7 @@ public:
     /// @brief Change the query name to only the TLD name
     void changeToTLD();
 
-    /// @brief Changes the query type to DNSKEY
-    void requestDNSKEY();
+    /// @brief Changes the type of the query to a certain type
+    /// @param type The type of the new DNS query type
+    void changeMessageQueryType(int type);
 };

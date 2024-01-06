@@ -9,7 +9,10 @@ DNSSEC::DNSSEC(const DnsMessage & request)
 
     _request.changeToTLD();
 
-    _request.requestDNSKEY();
+    _request.changeMessageQueryType(DNS_DNSKEY);
+    Communicator::DNS_ResponseFetcher(_request.getMessageInBytes());
+
+    _request.changeMessageQueryType(DNS_DS);
     Communicator::DNS_ResponseFetcher(_request.getMessageInBytes());
 }
 

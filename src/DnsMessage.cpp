@@ -44,6 +44,9 @@ DnsMessage::DnsMessage(const std::vector<unsigned char>& message)
             case DNS_DNSKEY:
                 answer = new DNS_DNSKEY_Answer(type, message, index);
                 break;
+            case DNS_DS:
+                answer = new DNS_DS_Answer(type, message, index);
+                break;
         }
 
         _answers.push_back(answer);
@@ -106,12 +109,12 @@ void DnsMessage::changeToTLD()
     _messageInBytes.erase(_messageInBytes.begin() + QUERY_NAME_START_INDEX, _messageInBytes.begin() + QUERY_NAME_START_INDEX + countName);
 }
 
-void DnsMessage::requestDNSKEY()
+void DnsMessage::changeMessageQueryType(int type)
 {
-    _query.type = DNS_DNSKEY;
+    _query.type = type;
 
     // 13 is the index where the query name starts, the first 1 is to skip the null char
     // and second 1 is to get to the second byte of the type to change it
     const int QUERY_TYPE_INDEX = 13 + _query.name.size() + 1 + 1;
-    _messageInBytes[QUERY_TYPE_INDEX] = DNS_DNSKEY;
+    _messageInBytes[QUERY_TYPE_INDEX] = type;
 }
