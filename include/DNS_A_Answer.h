@@ -12,4 +12,8 @@ private:
 public:
     // C'tor
     DNS_A_Answer(int type, const std::vector<unsigned char>& dnsMsg, int& index);
+
+    // Getters
+    
+    std::vector<unsigned char> get_IP_address() const;
 };

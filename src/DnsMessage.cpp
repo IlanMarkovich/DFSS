@@ -1,4 +1,4 @@
-#include "DnsMessage.h"
+#include "DnsMessage.hpp"
 
 #include <algorithm>
 

@@ -19,7 +19,7 @@
 #include "SocketCreationException.h"
 #include "SocketBindException.h"
 
-#include "DnsMessage.h"
+#include "DnsMessage.hpp"
 #include "DatabaseManager.h"
 #include "FileLoader.h"
 

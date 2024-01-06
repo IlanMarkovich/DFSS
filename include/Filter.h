@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DnsMessage.h"
+#include "DnsMessage.hpp"
 #include "DatabaseManager.h"
 
 // Circular Dependency

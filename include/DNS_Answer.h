@@ -19,4 +19,11 @@ protected:
 public:
     // C'tor
     DNS_Answer(int type, const std::vector<unsigned char>& dnsMsg, int& index);
+
+    // D'tor
+    virtual ~DNS_Answer();
+
+    // Getters
+
+    int getType() const;
 };

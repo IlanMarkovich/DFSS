@@ -5,15 +5,20 @@ DNSSEC::DNSSEC(const DnsMessage & request)
 : _request(request)
 {
     _request.addOPT();
-    //DnsMessage response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes()));
+    DnsMessage domain_A_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes()));
 
-    _request.changeToTLD();
+    auto A_RRset = domain_A_response.getResponse_RRset<DNS_A_Answer>();
 
-    _request.changeMessageQueryType(DNS_DNSKEY);
-    Communicator::DNS_ResponseFetcher(_request.getMessageInBytes());
+    if(A_RRset.empty())
+        return; // TODO throw
 
-    _request.changeMessageQueryType(DNS_DS);
-    Communicator::DNS_ResponseFetcher(_request.getMessageInBytes());
+    _destinationIP = A_RRset[0].get_IP_address();
+
+    if(domain_A_response.is_DNSSEC_response())
+    {
+        _request.changeMessageQueryType(DNS_DNSKEY);
+        DnsMessage domain_DNSKEY_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes()));
+    }
 }
 
 // Getters
@@ -23,7 +28,7 @@ bool DNSSEC::getFilterResult() const
     return _filterResult;
 }
 
-std::string DNSSEC::getDestinationIP() const
+std::vector<unsigned char> DNSSEC::getDestinationIP() const
 {
-    return destinationIP;
+    return _destinationIP;
 }

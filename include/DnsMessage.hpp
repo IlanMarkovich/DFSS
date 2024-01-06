@@ -56,6 +56,12 @@ public:
 
     // Methods
 
+    /// @brief Gets a certain DNS RRset from a response
+    /// @tparam T The type of RRset requested
+    /// @return The RRset from the response (could be empty)
+    template <class T>
+    std::vector<T> getResponse_RRset() const;
+
     /// @brief Adds the additional RR called OPT with the DO flag to
     /// tell the DNS resolver to use DNSSEC
     void addOPT();
@@ -67,3 +73,21 @@ public:
     /// @param type The type of the new DNS query type
     void changeMessageQueryType(int type);
 };
+
+// Public Template Methods
+
+template<class T>
+inline std::vector<T> DnsMessage::getResponse_RRset() const
+{
+    std::vector<T> RRset;
+
+    for(auto answer : _answers)
+    {
+        T* ans;
+
+        if((ans = dynamic_cast<T*>(answer)) != nullptr)
+            RRset.push_back(*ans);
+    }
+
+    return RRset;
+}

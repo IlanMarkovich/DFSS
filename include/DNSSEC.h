@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DnsMessage.h"
+#include "DnsMessage.hpp"
 #include "Communicator.h"
 
 
@@ -10,7 +10,7 @@ private:
     // Fields
 
     DnsMessage _request;
-    std::string destinationIP;
+    std::vector<unsigned char> _destinationIP;
     bool _filterResult;
 
 public:
@@ -20,5 +20,8 @@ public:
     // Getters
 
     bool getFilterResult() const;
-    std::string getDestinationIP() const;
+    std::vector<unsigned char> getDestinationIP() const;
+
+private:
+    // Methods
 };

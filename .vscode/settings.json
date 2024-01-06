@@ -61,7 +61,8 @@
         "mutex": "cpp",
         "semaphore": "cpp",
         "stop_token": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "cinttypes": "cpp"
     },
     "C_Cpp.dimInactiveRegions": false
 }
