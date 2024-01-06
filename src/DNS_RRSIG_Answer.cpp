@@ -1,11 +1,10 @@
 #include "DNS_RRSIG_Answer.h"
 
 // C'tor
-DNS_RRSIG_Answer::DNS_RRSIG_Answer(const std::string& name, const std::vector<unsigned char>& dnsMsg, int& index)
-: DNS_Answer(name, dnsMsg, index)
+DNS_RRSIG_Answer::DNS_RRSIG_Answer(int type, const std::vector<unsigned char>& dnsMsg, int& index)
+: DNS_Answer(type, dnsMsg, index)
 {
-    const int TYPE_COVERED_SIZE = 4;
-    _type_covered = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(dnsMsg, index, TYPE_COVERED_SIZE));
+    _type_covered = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(dnsMsg, index));
 
     const int ALGORITHM_SIZE = 1;
     _algorithm = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(dnsMsg, index, ALGORITHM_SIZE));
@@ -14,7 +13,7 @@ DNS_RRSIG_Answer::DNS_RRSIG_Answer(const std::string& name, const std::vector<un
     _labels = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(dnsMsg, index, LABELS_SIZE));
 
     const int ORIGINAL_TTL_SIZE = 4;
-    _original_ttl = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(dnsMsg, index, ORIGINAL_TTL_SIZE));
+    _original_ttl = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(dnsMsg, index, ORIGINAL_TTL_SIZE), true);
 
     const int SIG_EXPIRATION_SIZE = 4;
     _sig_expiration = DNS_Reader::readPortionFromMessage(dnsMsg, index, SIG_EXPIRATION_SIZE).data();
@@ -22,9 +21,9 @@ DNS_RRSIG_Answer::DNS_RRSIG_Answer(const std::string& name, const std::vector<un
     const int SIG_INCEPTION_SIZE = 4;
     _sig_inception = DNS_Reader::readPortionFromMessage(dnsMsg, index, SIG_INCEPTION_SIZE).data();
 
-    _key_tag = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(dnsMsg, index));
+    _key_tag = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(dnsMsg, index), true);
     _signer_name = DNS_Reader::readStringFromMessage(dnsMsg, index);
 
-    int remaining_data_len = _data_len - TYPE_COVERED_SIZE - ALGORITHM_SIZE - LABELS_SIZE - ORIGINAL_TTL_SIZE - SIG_EXPIRATION_SIZE - SIG_INCEPTION_SIZE - (2 * DNS_PROPERTY_SIZE);
+    int remaining_data_len = _data_len - ALGORITHM_SIZE - LABELS_SIZE - ORIGINAL_TTL_SIZE - SIG_EXPIRATION_SIZE - SIG_INCEPTION_SIZE - (3 * DNS_PROPERTY_SIZE);
     _signature = DNS_Reader::readPortionFromMessage(dnsMsg, index, remaining_data_len);
 }

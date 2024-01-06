@@ -5,7 +5,7 @@ DNSSEC::DNSSEC(const DnsMessage & request)
 : _request(request)
 {
     _request.addOPT();
-    auto response = DnsMessage(Communicator::domainIPFetcher(_request.getMessageInBytes()));
+    DnsMessage response(Communicator::domainIPFetcher(_request.getMessageInBytes()));
 }
 
 // Getters

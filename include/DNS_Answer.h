@@ -11,7 +11,6 @@ class DNS_Answer
 {
 protected:
     // Fields
-    std::string _name;
     int _type;
     const unsigned char* _answer_class;
     int _ttl;
@@ -19,5 +18,5 @@ protected:
 
 public:
     // C'tor
-    DNS_Answer(const std::string& name, const std::vector<unsigned char>& dnsMsg, int& index);
+    DNS_Answer(int type, const std::vector<unsigned char>& dnsMsg, int& index);
 };

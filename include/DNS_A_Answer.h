@@ -7,9 +7,9 @@ class DNS_A_Answer : public DNS_Answer
 {
 private:
     // Field
-    std::string _ip_address;
+    std::vector<unsigned char> _ip_address;
 
 public:
     // C'tor
-    DNS_A_Answer(const std::string& name, const std::vector<unsigned char>& dnsMsg, int& index);
+    DNS_A_Answer(int type, const std::vector<unsigned char>& dnsMsg, int& index);
 };

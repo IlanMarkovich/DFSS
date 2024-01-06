@@ -19,5 +19,5 @@ private:
 
 public:
     // C'tor
-    DNS_RRSIG_Answer(const std::string& name, const std::vector<unsigned char>& dnsMsg, int& index);
+    DNS_RRSIG_Answer(int type, const std::vector<unsigned char>& dnsMsg, int& index);
 };

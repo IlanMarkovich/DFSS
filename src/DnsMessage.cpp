@@ -24,21 +24,19 @@ DnsMessage::DnsMessage(const std::vector<unsigned char>& message)
     // Read answers
     for(int ans = 0; ans < _answers_RRs; ans++)
     {
-        string answerName = reinterpret_cast<const char*>(DNS_Reader::readPortionFromMessage(message, index).data());
-
-        // Get the answer type
+        // Skip the name and get the answer type
+        index += DNS_PROPERTY_SIZE;
         int type = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(message, index));
-        index -= DNS_PROPERTY_SIZE;
 
         DNS_Answer* answer = nullptr;
 
         switch(type)
         {
             case DNS_A:
-                answer = new DNS_A_Answer(answerName, message, index);
+                answer = new DNS_A_Answer(type, message, index);
                 break;
             case DNS_RRSIG:
-                answer = new DNS_RRSIG_Answer(answerName, message, index);
+                answer = new DNS_RRSIG_Answer(type, message, index);
                 break;
         }
 
