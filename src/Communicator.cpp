@@ -79,7 +79,7 @@ void Communicator::stopListening()
     _listen.store(false);
 }
 
-std::vector<unsigned char> Communicator::domainIPFetcher(const std::vector<unsigned char>& input)
+std::vector<unsigned char> Communicator::DNS_ResponseFetcher(const std::vector<unsigned char>& input)
 {
     const char* dns_server = "1.1.1.1";
     const int dns_port = 53;
@@ -126,7 +126,7 @@ void Communicator::bind_user(req* r)
         return;
     }
 
-    std::vector<unsigned char> response = Communicator::domainIPFetcher(r->data);
+    std::vector<unsigned char> response = Communicator::DNS_ResponseFetcher(r->data);
 
     // Send the response back to the client
     sendto(fd, response.data(), response.size(), 0, (struct sockaddr*)&r->clientaddr, sizeof(r->clientaddr));

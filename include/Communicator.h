@@ -63,5 +63,5 @@ public:
 
     void listen();
     void stopListening();
-    static std::vector<unsigned char> domainIPFetcher(const std::vector<unsigned char>& input);
+    static std::vector<unsigned char> DNS_ResponseFetcher(const std::vector<unsigned char>& input);
 };

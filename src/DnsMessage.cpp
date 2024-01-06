@@ -1,8 +1,10 @@
 #include "DnsMessage.h"
 
+#include <list>
+
 // C'tor
 DnsMessage::DnsMessage(const std::vector<unsigned char>& message)
-: _messageInBytes(message)
+: _messageInBytes(message), _DNSSEC_response(false)
 {
     int index = 0;
     
@@ -37,6 +39,10 @@ DnsMessage::DnsMessage(const std::vector<unsigned char>& message)
                 break;
             case DNS_RRSIG:
                 answer = new DNS_RRSIG_Answer(type, message, index);
+                _DNSSEC_response = true;
+                break;
+            case DNS_DNSKEY:
+                answer = new DNS_DNSKEY_Answer(type, message, index);
                 break;
         }
 
@@ -65,6 +71,11 @@ std::vector<unsigned char> DnsMessage::getMessageInBytes() const
     return _messageInBytes;
 }
 
+bool DnsMessage::is_DNSSEC_response() const
+{
+    return _DNSSEC_response;
+}
+
 // Public Methods
 
 void DnsMessage::addOPT()
@@ -73,5 +84,44 @@ void DnsMessage::addOPT()
     _messageInBytes.insert(_messageInBytes.end(), OPT.begin(), OPT.end());
 
     const int ADDITIONAL_RRs_INDEX = 11;
-    _messageInBytes[ADDITIONAL_RRs_INDEX] = '\x01';
+    _messageInBytes[ADDITIONAL_RRs_INDEX] = ++_additional_RRs;
+}
+
+void DnsMessage::changeToTLD()
+{
+    // ---------- Change the query name field ----------
+    int countName = 1;
+    auto iter = _query.name.begin();
+
+        while(*iter != '.')
+        {
+            iter++;
+            countName++;
+        }
+
+        _query.name = std::string(iter + 1, _query.name.end());
+    // --------------------
+
+    // ---------- Change the query name in `_messageInBytes` ----------
+    const int QUERY_NAME_START_INDEX = 13;
+    std::list<unsigned char> messageInBytesList(_messageInBytes.begin(), _messageInBytes.end());
+
+    auto nameStartIter = messageInBytesList.begin();
+    std::advance(nameStartIter, QUERY_NAME_START_INDEX);
+
+    auto nameEndIter = nameStartIter;
+    std::advance(nameEndIter, countName);
+
+    messageInBytesList.erase(nameStartIter, nameEndIter);
+    _messageInBytes = std::vector<unsigned char>(messageInBytesList.begin(), messageInBytesList.end());
+}
+
+void DnsMessage::requestDNSKEY()
+{
+    _query.type = DNS_DNSKEY;
+
+    // 13 is the index where the query name starts, the first 1 is to skip the null char
+    // and second 1 is to get to the second byte of the type to change it
+    const int QUERY_TYPE_INDEX = 13 + _query.name.size() + 1 + 1;
+    _messageInBytes[QUERY_TYPE_INDEX] = DNS_DNSKEY;
 }
