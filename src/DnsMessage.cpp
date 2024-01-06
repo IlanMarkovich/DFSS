@@ -1,6 +1,6 @@
 #include "DnsMessage.h"
 
-#include <list>
+#include <algorithm>
 
 // C'tor
 DnsMessage::DnsMessage(const std::vector<unsigned char>& message)
@@ -93,27 +93,17 @@ void DnsMessage::changeToTLD()
     int countName = 1;
     auto iter = _query.name.begin();
 
-        while(*iter != '.')
-        {
-            iter++;
-            countName++;
-        }
+    while(*iter != '.' || std::count(iter + 1, _query.name.end(), '.') != 0)
+    {
+        iter++;
+        countName++;
+    }
 
-        _query.name = std::string(iter + 1, _query.name.end());
-    // --------------------
+    _query.name = std::string(iter + 1, _query.name.end());
 
     // ---------- Change the query name in `_messageInBytes` ----------
     const int QUERY_NAME_START_INDEX = 13;
-    std::list<unsigned char> messageInBytesList(_messageInBytes.begin(), _messageInBytes.end());
-
-    auto nameStartIter = messageInBytesList.begin();
-    std::advance(nameStartIter, QUERY_NAME_START_INDEX);
-
-    auto nameEndIter = nameStartIter;
-    std::advance(nameEndIter, countName);
-
-    messageInBytesList.erase(nameStartIter, nameEndIter);
-    _messageInBytes = std::vector<unsigned char>(messageInBytesList.begin(), messageInBytesList.end());
+    _messageInBytes.erase(_messageInBytes.begin() + QUERY_NAME_START_INDEX, _messageInBytes.begin() + QUERY_NAME_START_INDEX + countName);
 }
 
 void DnsMessage::requestDNSKEY()
