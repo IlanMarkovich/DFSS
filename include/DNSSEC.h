@@ -10,7 +10,6 @@ private:
     // Fields
 
     DnsMessage _request;
-    std::vector<unsigned char> _destinationIP;
     bool _filterResult;
 
 public:
@@ -20,8 +19,9 @@ public:
     // Getters
 
     bool getFilterResult() const;
-    std::vector<unsigned char> getDestinationIP() const;
 
 private:
     // Methods
+
+    bool validateServer(DnsMessage DNSKEY_response, DnsMessage data_response);
 };

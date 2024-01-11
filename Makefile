@@ -17,7 +17,7 @@ run: clean all
 	./$(BIN)/$(EXECUTABLE)
 
 $(BIN)/$(EXECUTABLE): $(SRC)/*.cpp
-	$(CXX) $(CXX_FLAGS) $(shell pkg-config --cflags openssl) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(shell pkg-config --cflags --libs libmongocxx) -Wl,-rpath,/usr/local/lib $(shell pkg-config --libs openssl)
+	$(CXX) $(CXX_FLAGS) $(shell pkg-config --cflags openssl) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(shell pkg-config --cflags --libs libmongocxx) -Wl,-rpath,/usr/local/lib
 
 clean:
 	-rm $(BIN)/*

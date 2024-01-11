@@ -81,7 +81,7 @@ void Communicator::stopListening()
 
 std::vector<unsigned char> Communicator::DNS_ResponseFetcher(const std::vector<unsigned char>& input)
 {
-    const char* dns_server = "1.1.1.1";
+    const char* dns_server = "8.8.8.8";
     const int dns_port = 53;
     char response[4096];  // Adjust the size as needed
 

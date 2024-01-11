@@ -109,12 +109,23 @@ void DnsMessage::changeToTLD()
     _messageInBytes.erase(_messageInBytes.begin() + QUERY_NAME_START_INDEX, _messageInBytes.begin() + QUERY_NAME_START_INDEX + countName);
 }
 
+void DnsMessage::changeToRoot()
+{
+    int countTLD = _query.name.size() + 1;
+    _query.name = "";
+
+    // Deletes the TLD from the message in bytes, and put a null character so ROOT will be the query name
+    const int QUERY_NAME_START_INDEX = 13;
+    _messageInBytes.erase(_messageInBytes.begin() + QUERY_NAME_START_INDEX, _messageInBytes.begin() + QUERY_NAME_START_INDEX + countTLD);
+    _messageInBytes[QUERY_NAME_START_INDEX - 1] = '\0';
+}
+
 void DnsMessage::changeMessageQueryType(int type)
 {
     _query.type = type;
 
-    // 13 is the index where the query name starts, the first 1 is to skip the null char
+    // 13 is the index where the query name starts, the first 1 is to skip the null char (if not root)
     // and second 1 is to get to the second byte of the type to change it
-    const int QUERY_TYPE_INDEX = 13 + _query.name.size() + 1 + 1;
+    const int QUERY_TYPE_INDEX = 13 + _query.name.size() + (_query.name != "") + 1;
     _messageInBytes[QUERY_TYPE_INDEX] = type;
 }

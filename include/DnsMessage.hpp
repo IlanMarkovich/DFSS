@@ -69,6 +69,9 @@ public:
     /// @brief Change the query name to only the TLD name
     void changeToTLD();
 
+    /// @brief Change the query name to a DNS root server
+    void changeToRoot();
+
     /// @brief Changes the type of the query to a certain type
     /// @param type The type of the new DNS query type
     void changeMessageQueryType(int type);

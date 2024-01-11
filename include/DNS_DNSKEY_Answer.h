@@ -16,4 +16,12 @@ private:
 public:
     // C'tor
     DNS_DNSKEY_Answer(int type, const std::vector<unsigned char>& dnsMsg, int& index);
+
+    // Getters
+
+    std::vector<unsigned char> getPublicKey() const;
+
+    // Methods
+
+    bool isKSK() const;
 };

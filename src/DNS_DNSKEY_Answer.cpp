@@ -15,3 +15,18 @@ DNS_DNSKEY_Answer::DNS_DNSKEY_Answer(int type, const std::vector<unsigned char>&
     int remaining_data_len = _data_len - DNS_PROPERTY_SIZE - PROTOCOL_SIZE - ALGORITHM_SIZE;
     _public_key = DNS_Reader::readPortionFromMessage(dnsMsg, index, remaining_data_len);
 }
+
+// Getters
+
+std::vector<unsigned char> DNS_DNSKEY_Answer::getPublicKey() const
+{
+    return _public_key;
+}
+
+// Private Methods
+
+bool DNS_DNSKEY_Answer::isKSK() const
+{
+    // If this byte in the flag equals to 1 it means that this key is a KSK (Key Signing Key)
+    return _flags[1] == '\1';
+}
