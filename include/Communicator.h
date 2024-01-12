@@ -63,5 +63,6 @@ public:
 
     void listen();
     void stopListening();
-    static std::vector<unsigned char> DNS_ResponseFetcher(const std::vector<unsigned char>& input);
+    static std::vector<unsigned char> DNS_ResponseFetcher(const std::vector<unsigned char>& input, const char* dns_server = "8.8.8.8");
+    static std::string getDomainIP(const std::string& domain);
 };

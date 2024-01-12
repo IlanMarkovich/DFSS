@@ -1,5 +1,9 @@
 #include "DNSSEC.h"
 
+#include <stdlib.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+
 // C'tor
 DNSSEC::DNSSEC(const DnsMessage & request)
 : _request(request)
@@ -31,8 +35,25 @@ DNSSEC::DNSSEC(const DnsMessage & request)
     // DnsMessage ROOT_DS_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes()));
     // --------------- --------------- --------------- ---------------
 
-    _request.changeToRoot();
-    Communicator::DNS_ResponseFetcher(_request.getMessageInBytes());
+    std::string queryName = _request.getQuery().name;
+
+    _request.changeQueryNameToRoot();
+    DnsMessage root_A_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes()));
+
+    _request.changeQueryName(queryName);
+    _request.addOPT();
+    DnsMessage domain_A_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes()));
+    DnsMessage* domain_DNSKEY_response = nullptr;
+    if(domain_A_response.is_DNSSEC_response())
+    {
+        _request.changeMessageQueryType(DNS_DNSKEY);
+        domain_DNSKEY_response = new DnsMessage(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes()));
+    }
+
+    _request.changeMessageQueryType(DNS_DS);
+    std::string root_domain = root_A_response.getResponse_RRset<DNS_SOA_Answer>()[0].getNameServer();
+    DnsMessage root_TLD_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), Communicator::getDomainIP(root_domain).c_str()));
+    std::string TLD_domain = root_TLD_response.getResponse_RRset<DNS_NS_Answer>()[0].getNameServer();
 }
 
 // Getters

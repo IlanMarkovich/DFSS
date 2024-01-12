@@ -24,10 +24,10 @@ DnsMessage::DnsMessage(const std::vector<unsigned char>& message)
     _query = (Query){ queryName, ByteHelper::bytesToInt(type), queryClass.data() };
 
     // Read answers
-    for(int ans = 0; ans < _answers_RRs; ans++)
+    for(int ans = 0; ans < _answers_RRs + _authority_RRs; ans++)
     {
         // Skip the name and get the answer type
-        index += DNS_PROPERTY_SIZE;
+        index += _query.name == "" ? _query.name.size() : DNS_PROPERTY_SIZE;
         int type = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(message, index));
 
         DNS_Answer* answer = nullptr;
@@ -46,6 +46,12 @@ DnsMessage::DnsMessage(const std::vector<unsigned char>& message)
                 break;
             case DNS_DS:
                 answer = new DNS_DS_Answer(type, message, index);
+                break;
+            case DNS_NS:
+                answer = new DNS_NS_Answer(type, message, index);
+                break;
+            case DNS_SOA:
+                answer = new DNS_SOA_Answer(type, message, index);
                 break;
         }
 
@@ -90,26 +96,23 @@ void DnsMessage::addOPT()
     _messageInBytes[ADDITIONAL_RRs_INDEX] = ++_additional_RRs;
 }
 
-void DnsMessage::changeToTLD()
+void DnsMessage::changeQueryName(const std::string & newQueryName)
 {
-    // ---------- Change the query name field ----------
-    int countName = 1;
-    auto iter = _query.name.begin();
+    int countName = _query.name.size();
+    _query.name = newQueryName;
 
-    while(*iter != '.' || std::count(iter + 1, _query.name.end(), '.') != 0)
-    {
-        iter++;
-        countName++;
-    }
-
-    _query.name = std::string(iter + 1, _query.name.end());
-
-    // ---------- Change the query name in `_messageInBytes` ----------
     const int QUERY_NAME_START_INDEX = 13;
     _messageInBytes.erase(_messageInBytes.begin() + QUERY_NAME_START_INDEX, _messageInBytes.begin() + QUERY_NAME_START_INDEX + countName);
+
+    auto newQueryNameVector = std::vector<unsigned char>(newQueryName.begin(), newQueryName.end());
+    std::replace(newQueryNameVector.begin(), newQueryNameVector.end(), '.', '\3');
+    newQueryNameVector.push_back('\0');
+    _messageInBytes.insert(_messageInBytes.begin() + QUERY_NAME_START_INDEX, newQueryNameVector.begin(), newQueryNameVector.end());
+
+    _messageInBytes[QUERY_NAME_START_INDEX - 1] = '\3';
 }
 
-void DnsMessage::changeToRoot()
+void DnsMessage::changeQueryNameToRoot()
 {
     int countTLD = _query.name.size() + 1;
     _query.name = "";

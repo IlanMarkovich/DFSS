@@ -8,12 +8,16 @@
 #include "DNS_RRSIG_Answer.h"
 #include "DNS_DNSKEY_Answer.h"
 #include "DNS_DS_Answer.h"
+#include "DNS_NS_Answer.h"
+#include "DNS_SOA_Answer.h"
 
 #define DNS_PROPERTY_SIZE 2
 #define DNS_A 1
 #define DNS_RRSIG 46
 #define DNS_DNSKEY 48
 #define DNS_DS 43
+#define DNS_NS 2
+#define DNS_SOA 6
 
 using std::string;
 
@@ -66,11 +70,12 @@ public:
     /// tell the DNS resolver to use DNSSEC
     void addOPT();
 
-    /// @brief Change the query name to only the TLD name
-    void changeToTLD();
+    /// @brief Change the query name the given name
+    /// @param newQueryName The name which the query name will change to
+    void changeQueryName(const std::string& newQueryName);
 
     /// @brief Change the query name to a DNS root server
-    void changeToRoot();
+    void changeQueryNameToRoot();
 
     /// @brief Changes the type of the query to a certain type
     /// @param type The type of the new DNS query type

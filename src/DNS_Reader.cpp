@@ -19,7 +19,7 @@ std::string DNS_Reader::readStringFromMessage(const std::vector<unsigned char>& 
 {
     std::string str;
 
-    for(i++ ; message[i] != '\0'; i++)
+    for(i++ ; i < (int)message.size() && message[i] != '\0'; i++)
     {
         // If the char is not a displayable character, insert a dot
         str += message[i] <= '\31' ? '.' : message[i];
