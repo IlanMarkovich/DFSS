@@ -15,3 +15,10 @@ DNS_DS_Answer::DNS_DS_Answer(int type, const std::vector<unsigned char>& dnsMsg,
     int remaining_data_len = _data_len - DNS_PROPERTY_SIZE - ALGORITHM_SIZE - DIGEST_TYPE_SIZE;
     _digest = DNS_Reader::readPortionFromMessage(dnsMsg, index, remaining_data_len);
 }
+
+// Getters
+
+std::vector<unsigned char> DNS_DS_Answer::getDigest() const
+{
+    return _digest;
+}

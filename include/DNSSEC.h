@@ -4,13 +4,18 @@
 #include "Communicator.h"
 
 
+enum DNSSEC_Level
+{
+    Non, Domain, TLD
+};
+
 class DNSSEC
 {
 private:
     // Fields
 
     DnsMessage _request;
-    bool _filterResult;
+    DNSSEC_Level _filterResult;
 
 public:
     // C'tor
@@ -18,10 +23,10 @@ public:
 
     // Getters
 
-    bool getFilterResult() const;
+    DNSSEC_Level getFilterResult() const;
 
 private:
     // Methods
 
-    bool validateServer(DnsMessage DNSKEY_response, DnsMessage data_response);
+    bool validateServer(DnsMessage DNSKEY_response, DnsMessage data_response, std::vector<unsigned char> KSK_verification);
 };

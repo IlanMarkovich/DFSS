@@ -16,4 +16,8 @@ private:
 public:
     // C'tor
     DNS_DS_Answer(int type, const std::vector<unsigned char>& dnsMsg, int& index);
+    
+    // Getters
+
+    std::vector<unsigned char> getDigest() const;
 };
