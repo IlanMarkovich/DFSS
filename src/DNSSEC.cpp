@@ -39,13 +39,16 @@ DNSSEC::DNSSEC(const DnsMessage & request)
 
     _request.changeQueryNameToRoot();
     DnsMessage root_A_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes()));
+    char root_IP[INET_ADDRSTRLEN];
+    strcpy(root_IP, Communicator::getDomainIP(root_A_response.getResponse_RRset<DNS_SOA_Answer>()[0].getNameServer()));
     _request.changeQueryName(queryName);
-    _request.changeMessageQueryType(DNS_DS);
-    const char* root_domain = Communicator::getDomainIP(root_A_response.getResponse_RRset<DNS_SOA_Answer>()[0].getNameServer());
-    DnsMessage root_TLD_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), root_domain));
-    const char* TLD_domain = Communicator::getDomainIP(root_TLD_response.getResponse_RRset<DNS_NS_Answer>()[1].getNameServer());
+    _request.changeMessageQueryType(DNS_A);
+    DnsMessage root_TLD_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), root_IP));
+    char TLD_IP[INET_ADDRSTRLEN];
+    strcpy(TLD_IP, Communicator::getDomainIP(root_TLD_response.getResponse_RRset<DNS_NS_Answer>()[1].getNameServer()));
 
     _request.addOPT();
+    _request.changeMessageQueryType(DNS_A);
     DnsMessage domain_A_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes()));
     DnsMessage* domain_DNSKEY_response = nullptr;
     if(domain_A_response.is_DNSSEC_response())
@@ -56,14 +59,14 @@ DNSSEC::DNSSEC(const DnsMessage & request)
     }
 
     _request.changeMessageQueryType(DNS_DNSKEY);
-    DnsMessage TLD_DNSKEY_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), TLD_domain));
+    DnsMessage root_DNSKEY_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), root_IP));
     _request.changeMessageQueryType(DNS_DS);
-    DnsMessage TLD_DS_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), TLD_domain));
+    DnsMessage root_DS_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), root_IP));
 
     _request.changeMessageQueryType(DNS_DNSKEY);
-    DnsMessage root_DNSKEY_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), root_domain));
+    DnsMessage TLD_DNSKEY_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), TLD_IP));
     _request.changeMessageQueryType(DNS_DS);
-    DnsMessage root_DS_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), root_domain));
+    DnsMessage TLD_DS_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), TLD_IP));
 }
 
 // Getters
