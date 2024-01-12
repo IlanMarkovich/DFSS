@@ -8,7 +8,7 @@ class DNS_NS_Answer : public DNS_Answer
 private:
     // Fields
 
-    std::string _name_server;
+    std::vector<unsigned char> _name_server;
 
 public:
     // C'tor

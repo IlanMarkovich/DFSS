@@ -39,8 +39,12 @@ DNSSEC::DNSSEC(const DnsMessage & request)
 
     _request.changeQueryNameToRoot();
     DnsMessage root_A_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes()));
-
     _request.changeQueryName(queryName);
+    _request.changeMessageQueryType(DNS_DS);
+    const char* root_domain = Communicator::getDomainIP(root_A_response.getResponse_RRset<DNS_SOA_Answer>()[0].getNameServer());
+    DnsMessage root_TLD_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), root_domain));
+    const char* TLD_domain = Communicator::getDomainIP(root_TLD_response.getResponse_RRset<DNS_NS_Answer>()[1].getNameServer());
+
     _request.addOPT();
     DnsMessage domain_A_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes()));
     DnsMessage* domain_DNSKEY_response = nullptr;
@@ -48,12 +52,18 @@ DNSSEC::DNSSEC(const DnsMessage & request)
     {
         _request.changeMessageQueryType(DNS_DNSKEY);
         domain_DNSKEY_response = new DnsMessage(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes()));
+        delete domain_DNSKEY_response;
     }
 
+    _request.changeMessageQueryType(DNS_DNSKEY);
+    DnsMessage TLD_DNSKEY_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), TLD_domain));
     _request.changeMessageQueryType(DNS_DS);
-    std::string root_domain = root_A_response.getResponse_RRset<DNS_SOA_Answer>()[0].getNameServer();
-    DnsMessage root_TLD_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), Communicator::getDomainIP(root_domain).c_str()));
-    std::string TLD_domain = root_TLD_response.getResponse_RRset<DNS_NS_Answer>()[0].getNameServer();
+    DnsMessage TLD_DS_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), TLD_domain));
+
+    _request.changeMessageQueryType(DNS_DNSKEY);
+    DnsMessage root_DNSKEY_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), root_domain));
+    _request.changeMessageQueryType(DNS_DS);
+    DnsMessage root_DS_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes(), root_domain));
 }
 
 // Getters

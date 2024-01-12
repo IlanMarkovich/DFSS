@@ -113,20 +113,20 @@ std::vector<unsigned char> Communicator::DNS_ResponseFetcher(const std::vector<u
     return std::vector<unsigned char>(response, response + received_bytes);
 }
 
-std::string Communicator::getDomainIP(const std::string & domain)
+const char* Communicator::getDomainIP(const std::string & domain)
 {
     const char* domain_buffer = domain.c_str();
     struct addrinfo* domain_info;
 
     if(getaddrinfo(domain_buffer, NULL, NULL, &domain_info) != 0)
-        perror("get IP address of root domain error");
+        throw std::exception();
 
-    char IP[INET_ADDRSTRLEN];
+    static char IP[INET_ADDRSTRLEN];
     struct sockaddr_in* ipv4 = (struct sockaddr_in*)domain_info->ai_addr;
     inet_ntop(AF_INET, &(ipv4->sin_addr), IP, INET_ADDRSTRLEN);
 
     freeaddrinfo(domain_info);
-    return std::string(IP, IP + INET_ADDRSTRLEN);
+    return IP;
 }
 
 // Private Methods
