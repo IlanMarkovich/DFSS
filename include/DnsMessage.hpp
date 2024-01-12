@@ -80,6 +80,11 @@ public:
     /// @brief Changes the type of the query to a certain type
     /// @param type The type of the new DNS query type
     void changeMessageQueryType(int type);
+
+    /// @brief Get the TLD part of a domain
+    /// @param domain The domain where the TLD is taken from
+    /// @return The TLD (Top Level Domain)
+    static std::string getTLD(const std::string& domain);
 };
 
 // Public Template Methods

@@ -98,6 +98,7 @@ void DnsMessage::addOPT()
 
 void DnsMessage::changeQueryName(const std::string & newQueryName)
 {
+    bool wasRoot = _query.name == "";
     int countName = _query.name.size();
     _query.name = newQueryName;
 
@@ -106,7 +107,10 @@ void DnsMessage::changeQueryName(const std::string & newQueryName)
 
     auto newQueryNameVector = std::vector<unsigned char>(newQueryName.begin(), newQueryName.end());
     std::replace(newQueryNameVector.begin(), newQueryNameVector.end(), '.', '\3');
-    newQueryNameVector.push_back('\0');
+    
+    if(wasRoot)
+        newQueryNameVector.push_back('\0');
+
     _messageInBytes.insert(_messageInBytes.begin() + QUERY_NAME_START_INDEX, newQueryNameVector.begin(), newQueryNameVector.end());
 
     _messageInBytes[QUERY_NAME_START_INDEX - 1] = '\3';
@@ -131,4 +135,14 @@ void DnsMessage::changeMessageQueryType(int type)
     // and second 1 is to get to the second byte of the type to change it
     const int QUERY_TYPE_INDEX = 13 + _query.name.size() + (_query.name != "") + 1;
     _messageInBytes[QUERY_TYPE_INDEX] = type;
+}
+
+std::string DnsMessage::getTLD(const std::string & domain)
+{
+    int index = 0;
+
+    while(std::count(domain.begin() + index, domain.end(), '.') != 0)
+        index++;
+
+    return std::string(domain.begin() + index, domain.end());
 }
