@@ -79,8 +79,9 @@ void Communicator::stopListening()
     _listen.store(false);
 }
 
-std::vector<unsigned char> Communicator::DNS_ResponseFetcher(const std::vector<unsigned char>& input, const char* dns_server)
+std::vector<unsigned char> Communicator::DNS_ResponseFetcher(const std::vector<unsigned char>& input)
 {
+    const char* dns_server = "1.1.1.1";
     const int dns_port = 53;
     char response[4096];  // Adjust the size as needed
 
@@ -111,22 +112,6 @@ std::vector<unsigned char> Communicator::DNS_ResponseFetcher(const std::vector<u
     // Close the socket
     close(sockfd);
     return std::vector<unsigned char>(response, response + received_bytes);
-}
-
-const char* Communicator::getDomainIP(const std::string & domain)
-{
-    const char* domain_buffer = domain.c_str();
-    struct addrinfo* domain_info;
-
-    if(getaddrinfo(domain_buffer, NULL, NULL, &domain_info) != 0)
-        throw std::exception();
-
-    static char IP[INET_ADDRSTRLEN];
-    struct sockaddr_in* ipv4 = (struct sockaddr_in*)domain_info->ai_addr;
-    inet_ntop(AF_INET, &(ipv4->sin_addr), IP, INET_ADDRSTRLEN);
-
-    freeaddrinfo(domain_info);
-    return IP;
 }
 
 // Private Methods

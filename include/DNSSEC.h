@@ -24,9 +24,4 @@ public:
     // Getters
 
     DNSSEC_Level getFilterResult() const;
-
-private:
-    // Methods
-
-    bool validateServer(DnsMessage DNSKEY_response, DnsMessage data_response, std::vector<unsigned char> KSK_verification);
 };

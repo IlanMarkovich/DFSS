@@ -8,16 +8,12 @@
 #include "DNS_RRSIG_Answer.h"
 #include "DNS_DNSKEY_Answer.h"
 #include "DNS_DS_Answer.h"
-#include "DNS_NS_Answer.h"
-#include "DNS_SOA_Answer.h"
 
 #define DNS_PROPERTY_SIZE 2
 #define DNS_A 1
 #define DNS_RRSIG 46
 #define DNS_DNSKEY 48
 #define DNS_DS 43
-#define DNS_NS 2
-#define DNS_SOA 6
 
 using std::string;
 

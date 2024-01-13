@@ -47,12 +47,6 @@ DnsMessage::DnsMessage(const std::vector<unsigned char>& message)
             case DNS_DS:
                 answer = new DNS_DS_Answer(type, message, index);
                 break;
-            case DNS_NS:
-                answer = new DNS_NS_Answer(type, message, index);
-                break;
-            case DNS_SOA:
-                answer = new DNS_SOA_Answer(type, message, index);
-                break;
         }
 
         _answers.push_back(answer);
@@ -98,22 +92,32 @@ void DnsMessage::addOPT()
 
 void DnsMessage::changeQueryName(const std::string & newQueryName)
 {
-    bool wasRoot = _query.name == "";
     int countName = _query.name.size();
     _query.name = newQueryName;
-
-    const int QUERY_NAME_START_INDEX = 13;
-    _messageInBytes.erase(_messageInBytes.begin() + QUERY_NAME_START_INDEX, _messageInBytes.begin() + QUERY_NAME_START_INDEX + countName);
-
-    auto newQueryNameVector = std::vector<unsigned char>(newQueryName.begin(), newQueryName.end());
-    std::replace(newQueryNameVector.begin(), newQueryNameVector.end(), '.', '\3');
     
-    if(wasRoot)
-        newQueryNameVector.push_back('\0');
+    const int QUERY_NAME_START_INDEX = 12;
+    _messageInBytes.erase(_messageInBytes.begin() + QUERY_NAME_START_INDEX, _messageInBytes.begin() + QUERY_NAME_START_INDEX + countName + 1);
 
-    _messageInBytes.insert(_messageInBytes.begin() + QUERY_NAME_START_INDEX, newQueryNameVector.begin(), newQueryNameVector.end());
+    std::vector<unsigned char> newQueryNameBuffer;
+    std::vector<unsigned char> buffer;
 
-    _messageInBytes[QUERY_NAME_START_INDEX - 1] = '\3';
+    for(unsigned int i = 0; i <= newQueryName.size(); i++)
+    {
+        if(i == newQueryName.size() || newQueryName[i] == '.')
+        {
+            buffer.insert(buffer.begin(), (unsigned char)buffer.size());
+            newQueryNameBuffer.insert(newQueryNameBuffer.end(), buffer.begin(), buffer.end());
+            buffer = std::vector<unsigned char>();
+            continue;
+        }
+
+        buffer.push_back(newQueryName[i]);
+    }
+
+    if(countName == 0)
+        newQueryNameBuffer.push_back('\0');
+
+    _messageInBytes.insert(_messageInBytes.begin() + QUERY_NAME_START_INDEX, newQueryNameBuffer.begin(), newQueryNameBuffer.end());
 }
 
 void DnsMessage::changeQueryNameToRoot()
