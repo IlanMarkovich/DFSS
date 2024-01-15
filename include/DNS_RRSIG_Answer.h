@@ -27,4 +27,8 @@ public:
     int getAlgorithm() const;
     int getKeyTag() const;
     std::vector<unsigned char> getSignature() const;
+
+    // Methods
+
+    virtual std::vector<unsigned char> getData() const override;
 };

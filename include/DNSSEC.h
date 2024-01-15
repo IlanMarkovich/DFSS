@@ -11,6 +11,9 @@
 #include <openssl/pem.h>
 #include <openssl/bn.h>
 
+#define ECDSAP256SHA256 13
+#define ECDSAP384SHA384 14
+
 
 enum DNSSEC_Level
 {
@@ -45,13 +48,13 @@ private:
 
     bool verifyServer(const DnsMessage* dnskey_response, const DnsMessage* data_response) const;
 
-    bool verifyData(const DNS_Answer& data, const DNS_DNSKEY_Answer& key, const DNS_RRSIG_Answer& signature) const;
+    bool verifyData(const DNS_Answer* data, const DNS_DNSKEY_Answer& key, const DNS_RRSIG_Answer& signature) const;
 
     RSA* publicKeyRSA(const std::vector<unsigned char>& dnsKey) const;
 
     EC_KEY* publicKeyECDSA(const std::vector<unsigned char>& dnsKey, int algorithm) const;
 
-    bool verifyPKCS1v15(RSA* key, const std::vector<unsigned char>& encryptedData, const std::vector<unsigned char>& signature, const EVP_MD* hashFunction) const;
+    bool verifyRSA(RSA* key, const std::vector<unsigned char>& encryptedData, const std::vector<unsigned char>& signature, const EVP_MD* hashFunction) const;
 
-    bool verifyECDSA(EC_KEY* key, const std::vector<unsigned char>& data, const BIGNUM* r, const BIGNUM* s, const EVP_MD* hashFunction) const;
+    bool verifyECDSA(EC_KEY* key, const std::vector<unsigned char>& data, const BIGNUM* r, const BIGNUM* s, int algorithm) const;
 };

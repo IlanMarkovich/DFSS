@@ -62,6 +62,10 @@ public:
     template <class T>
     std::vector<T> getResponse_RRset() const;
 
+    /// @brief Gets the data Resource Record from the response (DS or A)
+    /// @return The RR which contains the data
+    DNS_Answer* getData_RR() const;
+
     /// @brief Adds the additional RR called OPT with the DO flag to
     /// tell the DNS resolver to use DNSSEC
     void addOPT();
@@ -90,7 +94,7 @@ inline std::vector<T> DnsMessage::getResponse_RRset() const
 {
     std::vector<T> RRset;
 
-    for(auto answer : _answers)
+    for(const auto& answer : _answers)
     {
         T* ans;
 

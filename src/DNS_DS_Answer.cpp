@@ -22,3 +22,10 @@ std::vector<unsigned char> DNS_DS_Answer::getDigest() const
 {
     return _digest;
 }
+
+// Public Methods
+
+std::vector<unsigned char> DNS_DS_Answer::getData() const
+{
+    return _digest;
+}

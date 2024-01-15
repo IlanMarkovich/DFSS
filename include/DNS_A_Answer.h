@@ -16,4 +16,8 @@ public:
     // Getters
     
     std::vector<unsigned char> get_IP_address() const;
+
+    // Methods
+
+    virtual std::vector<unsigned char> getData() const override;
 };

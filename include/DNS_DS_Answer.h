@@ -20,4 +20,8 @@ public:
     // Getters
 
     std::vector<unsigned char> getDigest() const;
+
+    // Methods
+
+    virtual std::vector<unsigned char> getData() const override;
 };

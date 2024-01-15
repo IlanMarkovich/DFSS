@@ -49,3 +49,10 @@ std::vector<unsigned char> DNS_RRSIG_Answer::getSignature() const
 {
     return _signature;
 }
+
+// Public Methods
+
+std::vector<unsigned char> DNS_RRSIG_Answer::getData() const
+{
+    return _signature;
+}

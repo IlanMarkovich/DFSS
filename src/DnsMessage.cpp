@@ -81,6 +81,24 @@ bool DnsMessage::is_DNSSEC_response() const
 
 // Public Methods
 
+DNS_Answer * DnsMessage::getData_RR() const
+{
+    // Checks if an answer is DS or A answer type, and if so returns it
+    for(const auto& answer : _answers)
+    {
+        switch(answer->getType())
+        {
+            case DNS_DS:
+                return dynamic_cast<DNS_DS_Answer*>(answer);
+
+            case DNS_A:
+                return dynamic_cast<DNS_A_Answer*>(answer);
+        }
+    }
+
+    return nullptr;
+}
+
 void DnsMessage::addOPT()
 {
     const std::vector<unsigned char> OPT = {0x00, 0x00, 0x29, 0x10, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00};

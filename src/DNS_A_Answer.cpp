@@ -14,3 +14,10 @@ std::vector<unsigned char> DNS_A_Answer::get_IP_address() const
 {
     return _ip_address;
 }
+
+// Public Methods
+
+std::vector<unsigned char> DNS_A_Answer::getData() const
+{
+    return _ip_address;
+}

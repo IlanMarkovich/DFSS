@@ -45,3 +45,8 @@ DNS_DNSKEY_Answer DNS_DNSKEY_Answer::extractKSK(const std::vector<DNS_DNSKEY_Ans
     // There should be a KSK in the given vector
     throw std::exception();
 }
+
+std::vector<unsigned char> DNS_DNSKEY_Answer::getData() const
+{
+    return _public_key;
+}

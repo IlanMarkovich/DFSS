@@ -15,7 +15,6 @@ protected:
     const unsigned char* _answer_class;
     int _ttl;
     int _data_len;
-    std::vector<unsigned char> _data;
 
 public:
     // C'tor
@@ -30,5 +29,5 @@ public:
 
     // Methods
 
-    std::vector<unsigned char> getData() const;
+    virtual std::vector<unsigned char> getData() const = 0;
 };

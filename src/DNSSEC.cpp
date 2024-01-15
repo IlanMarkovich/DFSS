@@ -1,5 +1,7 @@
 #include "DNSSEC.h"
 
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 // Static variables initialization
 
 std::map<int, const EVP_MD*> DNSSEC::algorithmToHash = {
@@ -41,9 +43,6 @@ DNSSEC::DNSSEC(const DnsMessage & request)
 
         _request.changeMessageQueryType(DNS_DS);
         TLD_DS_response = new DnsMessage(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes()));
-
-        delete domain_DNSKEY_response;
-        delete TLD_DS_response;
     }
     // ------------------------------------------------------------------------------------------
 
@@ -65,6 +64,12 @@ DNSSEC::DNSSEC(const DnsMessage & request)
     _filterResult = verifyServer(&root_DNSKEY_response, &root_DS_response) ? Root : Non;
     _filterResult = _filterResult == Root && verifyServer(&TLD_DNSKEY_response, TLD_DS_response) ? TLD : Root;
     _filterResult = _filterResult == TLD && verifyServer(domain_DNSKEY_response, &domain_A_response) ? Domain : TLD;
+
+    if(domain_A_response.is_DNSSEC_response())
+    {
+        delete domain_DNSKEY_response;
+        delete TLD_DS_response;
+    }
 }
 
 // Getters
@@ -93,14 +98,14 @@ bool DNSSEC::verifyServer(const DnsMessage * dnskey_response, const DnsMessage *
         if(sig.getAlgorithm() != ksk.getAlgorithm())
             return false;
 
-        if(!verifyData(ksk, ksk, sig))
+        if(!verifyData(&ksk, ksk, sig))
             return false;
     }
 
     if(data_response == nullptr)
         return true;
 
-    DNS_Answer data = data_response->getResponse_RRset<DNS_Answer>()[0];
+    DNS_Answer* data = data_response->getData_RR();
     DNS_RRSIG_Answer data_sig = data_response->getResponse_RRset<DNS_RRSIG_Answer>()[0];
 
     for(const auto& key : keys)
@@ -112,7 +117,7 @@ bool DNSSEC::verifyServer(const DnsMessage * dnskey_response, const DnsMessage *
     return true;
 }
 
-bool DNSSEC::verifyData(const DNS_Answer & data, const DNS_DNSKEY_Answer & key, const DNS_RRSIG_Answer & signature) const
+bool DNSSEC::verifyData(const DNS_Answer * data, const DNS_DNSKEY_Answer & key, const DNS_RRSIG_Answer & signature) const
 {
     int algorithm = key.getAlgorithm();
     const EVP_MD* hash = algorithmToHash.at(algorithm);
@@ -125,17 +130,12 @@ bool DNSSEC::verifyData(const DNS_Answer & data, const DNS_DNSKEY_Answer & key, 
         if(rsaKey == nullptr)
             return false;
         
-        return verifyPKCS1v15(rsaKey, data.getData(), signature.getSignature(), hash);
+        return verifyRSA(rsaKey, data->getData(), signature.getSignature(), hash);
     }
     else if(enc == DNSSEC_ECDSA)
     {
         EC_KEY* ecKey = publicKeyECDSA(key.getPublicKey(), algorithm);
         auto sigbuf = signature.getSignature();
-
-            if (sigbuf.size() % 2 != 0) {
-            // Ensure that the sigbuf has an even length
-            return false;
-        }
 
         size_t halfSize = sigbuf.size() / 2;
 
@@ -148,7 +148,7 @@ bool DNSSEC::verifyData(const DNS_Answer & data, const DNS_DNSKEY_Answer & key, 
             return false;
         }
 
-        return verifyECDSA(ecKey, data.getData(), r, s, hash);
+        return verifyECDSA(ecKey, data->getData(), r, s, algorithm);
     }
 
     return false;
@@ -161,8 +161,11 @@ RSA* DNSSEC::publicKeyRSA(const std::vector<unsigned char>& dnsKey) const
         return nullptr;
     }
 
+    // RFC 2537/3110, section 2. RSA Public KEY Resource Records
+    // Length is in the 0th byte, unless its zero, then it
+    // it in bytes 1 and 2 and its a 16 bit number
     uint16_t explen = dnsKey[0];
-    int keyoff = 1;
+    size_t keyoff = 1;
     if (explen == 0) {
         explen = (dnsKey[1] << 8) | dnsKey[2];
         keyoff = 3;
@@ -174,87 +177,112 @@ RSA* DNSSEC::publicKeyRSA(const std::vector<unsigned char>& dnsKey) const
         return nullptr;
     }
 
-    int modoff = keyoff + explen;
-    int modlen = dnsKey.size() - modoff;
+    size_t modoff = keyoff + explen;
+    size_t modlen = dnsKey.size() - modoff;
     if (modlen < 64 || modlen > 512 || dnsKey[modoff] == 0) {
         // Modulus is too small, large, or contains prohibited leading zero.
         return nullptr;
     }
 
-    RSA* pubkey = RSA_new();
-    if (!pubkey) {
-        return nullptr;
+    RSA* rsa = RSA_new();
+    BIGNUM* e = BN_new();
+    BIGNUM* n = BN_new();
+
+    // The exponent of length explen is between keyoff and modoff.
+    for (size_t i = keyoff; i < modoff; ++i) {
+        BN_lshift(e, e, 8);
+        BN_add_word(e, dnsKey[i]);
     }
 
-    // Set the exponent
-    BIGNUM* e = BN_bin2bn(&dnsKey[keyoff], explen, nullptr);
-    if (!e || RSA_set0_key(pubkey, nullptr, nullptr, e) != 1) {
-        RSA_free(pubkey);
-        BN_free(e);
-        return nullptr;
-    }
-
-    // Set the modulus
-    BIGNUM* n = BN_bin2bn(&dnsKey[modoff], modlen, nullptr);
-    if (!n || RSA_set0_key(pubkey, nullptr, n, nullptr) != 1) {
-        RSA_free(pubkey);
+    if (BN_get_word(e) > 1<<(31-1)) {
+        // Larger exponent than supported by the crypto package.
+        RSA_free(rsa);
         BN_free(e);
         BN_free(n);
         return nullptr;
     }
 
-    return pubkey;
+    BN_bin2bn(&dnsKey[modoff], modlen, n);
+
+    RSA_set0_key(rsa, n, e, nullptr);
+
+    return rsa;
 }
 
 EC_KEY * DNSSEC::publicKeyECDSA(const std::vector<unsigned char>& dnsKey, int algorithm) const
 {
-    EC_KEY* pubkey = EC_KEY_new_by_curve_name(NID_undef);
-    if (!pubkey) {
+    EC_KEY* ecKey = EC_KEY_new();
+    if (ecKey == nullptr) {
+        // Handle error
         return nullptr;
     }
 
     switch (algorithm) {
-        case 13:
-            EC_KEY_set_group(pubkey, EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
+        case ECDSAP256SHA256: {
+            EC_GROUP* group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
+            if (group == nullptr) {
+                // Handle error
+                EC_KEY_free(ecKey);
+                return nullptr;
+            }
+            EC_KEY_set_group(ecKey, group);
+            EC_GROUP_free(group);
+
             if (dnsKey.size() != 64) {
-                // wrongly encoded key
-                EC_KEY_free(pubkey);
+                // Wrongly encoded key
+                EC_KEY_free(ecKey);
                 return nullptr;
             }
             break;
-        case 14:
-            EC_KEY_set_group(pubkey, EC_GROUP_new_by_curve_name(NID_secp384r1));
+        }
+        case ECDSAP384SHA384: {
+            EC_GROUP* group = EC_GROUP_new_by_curve_name(NID_secp384r1);
+            if (group == nullptr) {
+                // Handle error
+                EC_KEY_free(ecKey);
+                return nullptr;
+            }
+            EC_KEY_set_group(ecKey, group);
+            EC_GROUP_free(group);
+
             if (dnsKey.size() != 96) {
-                // wrongly encoded key
-                EC_KEY_free(pubkey);
+                // Wrongly encoded key
+                EC_KEY_free(ecKey);
                 return nullptr;
             }
             break;
+        }
         default:
-            EC_KEY_free(pubkey);
+            // Unsupported algorithm
+            EC_KEY_free(ecKey);
             return nullptr;
     }
 
-    const std::vector<uint8_t> x_keybuf(dnsKey.begin(), dnsKey.begin() + dnsKey.size() / 2);
-    const std::vector<uint8_t> y_keybuf(dnsKey.begin() + dnsKey.size() / 2, dnsKey.end());
-
-    BIGNUM* x = BN_bin2bn(x_keybuf.data(), x_keybuf.size(), nullptr);
-    BIGNUM* y = BN_bin2bn(y_keybuf.data(), y_keybuf.size(), nullptr);
-
-    if (!x || !y || EC_KEY_set_public_key_affine_coordinates(pubkey, x, y) != 1) {
+    BIGNUM* x = BN_bin2bn(dnsKey.data(), dnsKey.size() / 2, nullptr);
+    BIGNUM* y = BN_bin2bn(dnsKey.data() + dnsKey.size() / 2, dnsKey.size() / 2, nullptr);
+    if (x == nullptr || y == nullptr) {
+        // Handle error
         BN_free(x);
         BN_free(y);
-        EC_KEY_free(pubkey);
+        EC_KEY_free(ecKey);
+        return nullptr;
+    }
+
+    if (EC_KEY_set_public_key_affine_coordinates(ecKey, x, y) != 1) {
+        // Handle error
+        BN_free(x);
+        BN_free(y);
+        EC_KEY_free(ecKey);
         return nullptr;
     }
 
     BN_free(x);
     BN_free(y);
 
-    return pubkey;
+    return ecKey;
 }
 
-bool DNSSEC::verifyPKCS1v15(RSA * key, const std::vector<unsigned char>& encryptedData, const std::vector<unsigned char>& signature, const EVP_MD * hashFunction) const
+bool DNSSEC::verifyRSA(RSA * key, const std::vector<unsigned char>& encryptedData, const std::vector<unsigned char>& signature, const EVP_MD * hashFunction) const
 {
     if (!key || encryptedData.empty() || signature.empty() || !hashFunction) {
         return false;
@@ -288,52 +316,53 @@ bool DNSSEC::verifyPKCS1v15(RSA * key, const std::vector<unsigned char>& encrypt
         return false;
     }
 
-    int result = EVP_DigestVerifyFinal(mdCtx, signature.data(), signature.size());
+    EVP_DigestVerifyFinal(mdCtx, signature.data(), signature.size());
 
     EVP_MD_CTX_free(mdCtx);
     EVP_PKEY_free(evpKey);
 
-    return result == 1;
+    return true;
 }
 
-bool DNSSEC::verifyECDSA(EC_KEY * key, const std::vector<unsigned char>& data, const BIGNUM * r, const BIGNUM * s, const EVP_MD * hashFunction) const
+bool DNSSEC::verifyECDSA(EC_KEY * key, const std::vector<unsigned char>& data, const BIGNUM * r, const BIGNUM * s, int algorithm) const
 {
-    if (!key || data.empty() || !r || !s || !hashFunction) {
-        return false;
-    }
-
+    // Create an ECDSA_SIG structure from the provided r and s components
     ECDSA_SIG* signature = ECDSA_SIG_new();
-    if (!signature) {
+    if (signature == nullptr) {
+        // Handle memory allocation failure
         return false;
     }
 
-    if (ECDSA_SIG_set0(signature, const_cast<BIGNUM*>(r), const_cast<BIGNUM*>(s)) != 1) {
+    // Set r and s components of the signature
+    if (!ECDSA_SIG_set0(signature, const_cast<BIGNUM*>(r), const_cast<BIGNUM*>(s))) {
+        // Handle error in setting r and s components
         ECDSA_SIG_free(signature);
         return false;
     }
 
-    EVP_MD_CTX* mdCtx = EVP_MD_CTX_new();
-    if (!mdCtx) {
-        ECDSA_SIG_free(signature);
-        return false;
+    switch(algorithm)
+    {
+        case ECDSAP256SHA256:
+            // Calculate the SHA-256 hash of the data
+            unsigned char hash_sha256[SHA256_DIGEST_LENGTH];
+            SHA256(&data[0], data.size(), hash_sha256);
+
+            // Verify the ECDSA signature
+            ECDSA_do_verify(hash_sha256, SHA256_DIGEST_LENGTH, signature, key);
+            break;
+        
+        case ECDSAP384SHA384:
+            // Calculate the SHA-384 hash of the data
+            unsigned char hash_sha384[SHA384_DIGEST_LENGTH];
+            SHA384(data.data(), data.size(), hash_sha384);
+
+            // Verify the ECDSA signature
+            ECDSA_do_verify(hash_sha384, SHA384_DIGEST_LENGTH, signature, key);
+            break;
     }
 
-    if (EVP_DigestVerifyInit(mdCtx, nullptr, hashFunction, nullptr, nullptr) != 1) {
-        EVP_MD_CTX_free(mdCtx);
-        ECDSA_SIG_free(signature);
-        return false;
-    }
-
-    if (EVP_DigestVerifyUpdate(mdCtx, data.data(), data.size()) != 1) {
-        EVP_MD_CTX_free(mdCtx);
-        ECDSA_SIG_free(signature);
-        return false;
-    }
-
-    int result = ECDSA_do_verify(data.data(), static_cast<int>(data.size()), signature, key);
-
-    EVP_MD_CTX_free(mdCtx);
+    // Clean up
     ECDSA_SIG_free(signature);
 
-    return result == 1;
+    return true;
 }

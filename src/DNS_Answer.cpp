@@ -11,11 +11,6 @@ DNS_Answer::DNS_Answer(int type, const std::vector<unsigned char>& dnsMsg, int &
     _answer_class = DNS_Reader::readPortionFromMessage(dnsMsg, index).data();
     _ttl = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(dnsMsg, index, TTL_SIZE), true);
     _data_len = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(dnsMsg, index), true);
- 
-    for(auto it = dnsMsg.begin() + index; it != dnsMsg.end(); ++it)
-    {
-        _data.push_back(*it);
-    }
 }
 
 // D'tor
@@ -26,11 +21,4 @@ DNS_Answer::~DNS_Answer() {}
 int DNS_Answer::getType() const
 {
     return _type;
-}
-
-// Public Methods
-
-std::vector<unsigned char> DNS_Answer::getData() const
-{
-    return _data;
 }
