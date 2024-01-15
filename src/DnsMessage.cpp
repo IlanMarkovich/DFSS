@@ -27,7 +27,7 @@ DnsMessage::DnsMessage(const std::vector<unsigned char>& message)
     for(int ans = 0; ans < _answers_RRs + _authority_RRs; ans++)
     {
         // Skip the name and get the answer type
-        index += _query.name == "" ? _query.name.size() : DNS_PROPERTY_SIZE;
+        index += _query.name == "" ? _query.name.size() + 1 : DNS_PROPERTY_SIZE;
         int type = ByteHelper::bytesToInt(DNS_Reader::readPortionFromMessage(message, index));
 
         DNS_Answer* answer = nullptr;

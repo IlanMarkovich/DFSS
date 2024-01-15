@@ -18,15 +18,30 @@ DNS_DNSKEY_Answer::DNS_DNSKEY_Answer(int type, const std::vector<unsigned char>&
 
 // Getters
 
+int DNS_DNSKEY_Answer::getAlgorithm() const
+{
+    return _algorithm;
+}
+
 std::vector<unsigned char> DNS_DNSKEY_Answer::getPublicKey() const
 {
     return _public_key;
 }
 
-// Private Methods
+// Public Methods
 
-bool DNS_DNSKEY_Answer::isKSK() const
+DNS_DNSKEY_Answer DNS_DNSKEY_Answer::extractKSK(const std::vector<DNS_DNSKEY_Answer>& keys)
 {
-    // If this byte in the flag equals to 1 it means that this key is a KSK (Key Signing Key)
-    return _flags[1] == '\1';
+    if(keys.size() == 1)
+        return keys[0];
+
+    for(const auto& key : keys)
+    {
+        // Checks if the current key is a KSK by checking the Key Signing Key flag
+        if(key._flags[1] == '\1')
+            return key;
+    }
+
+    // There should be a KSK in the given vector
+    throw std::exception();
 }

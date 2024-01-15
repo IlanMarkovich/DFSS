@@ -19,9 +19,10 @@ public:
 
     // Getters
 
+    int getAlgorithm() const;
     std::vector<unsigned char> getPublicKey() const;
 
     // Methods
 
-    bool isKSK() const;
+    static DNS_DNSKEY_Answer extractKSK(const std::vector<DNS_DNSKEY_Answer>& keys);
 };

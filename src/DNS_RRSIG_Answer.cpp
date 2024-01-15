@@ -27,3 +27,25 @@ DNS_RRSIG_Answer::DNS_RRSIG_Answer(int type, const std::vector<unsigned char>& d
     int remaining_data_len = _data_len - ALGORITHM_SIZE - LABELS_SIZE - ORIGINAL_TTL_SIZE - SIG_EXPIRATION_SIZE - SIG_INCEPTION_SIZE - (3 * DNS_PROPERTY_SIZE);
     _signature = DNS_Reader::readPortionFromMessage(dnsMsg, index, remaining_data_len);
 }
+
+// Getters
+
+int DNS_RRSIG_Answer::getTypeCovered() const
+{
+    return _type_covered;
+}
+
+int DNS_RRSIG_Answer::getAlgorithm() const
+{
+    return _algorithm;
+}
+
+int DNS_RRSIG_Answer::getKeyTag() const
+{
+    return _key_tag;
+}
+
+std::vector<unsigned char> DNS_RRSIG_Answer::getSignature() const
+{
+    return _signature;
+}

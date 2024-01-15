@@ -25,6 +25,7 @@ std::string DNS_Reader::readStringFromMessage(const std::vector<unsigned char>& 
         str += message[i] <= '\31' ? '.' : message[i];
     }
 
-    i++;
+    
+    i = str == "" ? i : i + 1;
     return str;
 }
