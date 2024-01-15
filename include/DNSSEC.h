@@ -46,15 +46,45 @@ public:
 private:
     // Methods
 
+    /// @brief Verify a DNS server by taking a DNSKEY response and a data response (DS or A)
+    /// and do cryptographic validation checks with their digital signatures for authentication check
+    /// @param dnskey_response Contains the DNSKEYS (KSK and ZSK) used for the cryptographic checks
+    /// @param data_response Contains some sort of data which the DNS server send (A for ipv4 response or Dlegetion Signer for authentication of child zones)
+    /// @return Was the verification successful
     bool verifyServer(const DnsMessage* dnskey_response, const DnsMessage* data_response) const;
 
+    /// @brief Verify given its Public Key (KSK if data is key, ZSK if not), and a digital signature
+    /// which is the result of encrypting the digest of the data using the DNS server's private key
+    /// @param data The data being verified
+    /// @param key The public key used for the decryption of the signature
+    /// @param signature The signature used for the authentication of the data
+    /// @return Was the verification of the data successful
     bool verifyData(const DNS_Answer* data, const DNS_DNSKEY_Answer& key, const DNS_RRSIG_Answer& signature) const;
 
+    /// @brief Returns the public RSA key from a bytes buffer
+    /// @param dnsKey The bytes buffer being converted to an RSA public key
+    /// @return The public RSA key
     RSA* publicKeyRSA(const std::vector<unsigned char>& dnsKey) const;
 
+    /// @brief Returns an ECDSA public key from a bytes buffer
+    /// @param dnsKey The bytes buffer being converted to an ECDSA public key
+    /// @param algorithm The algorithm of the ECDSA (P256 or P384)
+    /// @return The public ECDSA key
     EC_KEY* publicKeyECDSA(const std::vector<unsigned char>& dnsKey, int algorithm) const;
 
-    bool verifyRSA(RSA* key, const std::vector<unsigned char>& encryptedData, const std::vector<unsigned char>& signature, const EVP_MD* hashFunction) const;
+    /// @brief Verifies a buffer of data using RSA and a certain hashing method
+    /// @param key The RSA public key used for the decryption of the digital signature
+    /// @param data The data being verified
+    /// @param signature The digital signature which represents the data
+    /// @param hashFunction The hashing method which is being used to get the digest of the data
+    /// @return The result of the verification
+    bool verifyRSA(RSA* key, const std::vector<unsigned char>& data, const std::vector<unsigned char>& signature, const EVP_MD* hashFunction) const;
 
+    /// @brief Verifies a buffer of data using ECDSA
+    /// @param key The ECDSA public key used for the decryption of the digital signature
+    /// @param data The data begin verified
+    /// @param r,s Two BIGNUM types which represent the digital signature
+    /// @param algorithm The algorithm of the ECDSA (P256 or P384)
+    /// @return The result of the verification
     bool verifyECDSA(EC_KEY* key, const std::vector<unsigned char>& data, const BIGNUM* r, const BIGNUM* s, int algorithm) const;
 };

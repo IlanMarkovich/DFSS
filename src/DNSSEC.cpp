@@ -90,6 +90,7 @@ bool DNSSEC::verifyServer(const DnsMessage * dnskey_response, const DnsMessage *
     std::vector<DNS_RRSIG_Answer> keys_sigs = dnskey_response->getResponse_RRset<DNS_RRSIG_Answer>();
     DNS_DNSKEY_Answer ksk = DNS_DNSKEY_Answer::extractKSK(keys);
 
+    // Validate the public key
     for(const auto& sig : keys_sigs)
     {
         if(sig.getTypeCovered() != DNS_DNSKEY)
@@ -108,6 +109,7 @@ bool DNSSEC::verifyServer(const DnsMessage * dnskey_response, const DnsMessage *
     DNS_Answer* data = data_response->getData_RR();
     DNS_RRSIG_Answer data_sig = data_response->getResponse_RRset<DNS_RRSIG_Answer>()[0];
 
+    // Tries every key to verify the data (could improve efficiency)
     for(const auto& key : keys)
     {
         if(!verifyData(data, key, data_sig))
@@ -123,6 +125,7 @@ bool DNSSEC::verifyData(const DNS_Answer * data, const DNS_DNSKEY_Answer & key, 
     const EVP_MD* hash = algorithmToHash.at(algorithm);
     DNSSEC_Encryption enc = algorithmToEncrpytion.at(algorithm);
 
+    // Check the encryption method and do the validation checks based on that
     if(enc == DNSSEC_RSA)
     {
         RSA* rsaKey = publicKeyRSA(key.getPublicKey());
@@ -282,9 +285,9 @@ EC_KEY * DNSSEC::publicKeyECDSA(const std::vector<unsigned char>& dnsKey, int al
     return ecKey;
 }
 
-bool DNSSEC::verifyRSA(RSA * key, const std::vector<unsigned char>& encryptedData, const std::vector<unsigned char>& signature, const EVP_MD * hashFunction) const
+bool DNSSEC::verifyRSA(RSA * key, const std::vector<unsigned char>& data, const std::vector<unsigned char>& signature, const EVP_MD * hashFunction) const
 {
-    if (!key || encryptedData.empty() || signature.empty() || !hashFunction) {
+    if (!key || data.empty() || signature.empty() || !hashFunction) {
         return false;
     }
 
@@ -310,7 +313,7 @@ bool DNSSEC::verifyRSA(RSA * key, const std::vector<unsigned char>& encryptedDat
         return false;
     }
 
-    if (EVP_DigestVerifyUpdate(mdCtx, encryptedData.data(), encryptedData.size()) != 1) {
+    if (EVP_DigestVerifyUpdate(mdCtx, data.data(), data.size()) != 1) {
         EVP_MD_CTX_free(mdCtx);
         EVP_PKEY_free(evpKey);
         return false;
