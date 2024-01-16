@@ -1,9 +1,15 @@
 #include "DNS_DNSKEY_Answer.h"
 
 // C'tor
-DNS_DNSKEY_Answer::DNS_DNSKEY_Answer(int type, const std::vector<unsigned char>& dnsMsg, int & index)
-: DNS_Answer(type, dnsMsg, index)
+DNS_DNSKEY_Answer::DNS_DNSKEY_Answer(int type, const std::vector<unsigned char>& dnsMsg, int& index, const std::vector<unsigned char>& owner)
+: DNS_Answer(type, dnsMsg, index), _owner(owner)
 {
+    // Save DNSKEY Rdata
+    for(auto it = dnsMsg.begin() + index; it != dnsMsg.begin() + index + _data_len; ++it)
+    {
+        _rdata.push_back(*it);
+    }
+
     _flags = DNS_Reader::readPortionFromMessage(dnsMsg, index);
 
     const int PROTOCOL_SIZE = 1;
@@ -30,6 +36,11 @@ std::vector<unsigned char> DNS_DNSKEY_Answer::getPublicKey() const
 
 // Public Methods
 
+std::vector<unsigned char> DNS_DNSKEY_Answer::getData() const
+{
+    return _public_key;
+}
+
 DNS_DNSKEY_Answer DNS_DNSKEY_Answer::extractKSK(const std::vector<DNS_DNSKEY_Answer>& keys)
 {
     if(keys.size() == 1)
@@ -46,7 +57,10 @@ DNS_DNSKEY_Answer DNS_DNSKEY_Answer::extractKSK(const std::vector<DNS_DNSKEY_Ans
     throw std::exception();
 }
 
-std::vector<unsigned char> DNS_DNSKEY_Answer::getData() const
+std::vector<unsigned char> DNS_DNSKEY_Answer::getDigestFormat() const
 {
-    return _public_key;
+    auto buffer = _owner;
+    buffer.insert(buffer.end(), _rdata.begin(), _rdata.end());
+
+    return buffer;
 }

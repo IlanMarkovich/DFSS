@@ -5,21 +5,19 @@
 // Static variables initialization
 
 std::map<int, const EVP_MD*> DNSSEC::algorithmToHash = {
-    {5, EVP_sha1()},
-    {7, EVP_sha1()},
-    {8, EVP_sha256()},
-    {10, EVP_sha512()},
-    {13, EVP_sha256()},
-    {14, EVP_sha384()}
+    {RSASHA1, EVP_sha1()},
+    {RSASHA256, EVP_sha256()},
+    {RSASHA512, EVP_sha512()},
+    {ECDSAP256SHA256, EVP_sha256()},
+    {ECDSAP384SHA384, EVP_sha384()}
 };
 
 std::map<int, DNSSEC_Encryption> DNSSEC::algorithmToEncrpytion = {
-    {5, DNSSEC_RSA},
-    {7, DNSSEC_RSA},
-    {8, DNSSEC_RSA},
-    {10, DNSSEC_RSA},
-    {13, DNSSEC_ECDSA},
-    {14, DNSSEC_ECDSA}
+    {RSASHA1, DNSSEC_RSA},
+    {RSASHA256, DNSSEC_RSA},
+    {RSASHA512, DNSSEC_RSA},
+    {ECDSAP256SHA256, DNSSEC_ECDSA},
+    {ECDSAP384SHA384, DNSSEC_ECDSA}
 };
 
 // C'tor
@@ -62,8 +60,8 @@ DNSSEC::DNSSEC(const DnsMessage & request)
 
     // Checking the recieved data with their digital signatures
     _filterResult = verifyServer(&root_DNSKEY_response, &root_DS_response) ? Root : Non;
-    _filterResult = _filterResult == Root && verifyServer(&TLD_DNSKEY_response, TLD_DS_response) ? TLD : Root;
-    _filterResult = _filterResult == TLD && verifyServer(domain_DNSKEY_response, &domain_A_response) ? Domain : TLD;
+    _filterResult = _filterResult == Root && verifyServer(&TLD_DNSKEY_response, TLD_DS_response, root_DS_response.getData_RR()->getData()) ? TLD : Root;
+    _filterResult = _filterResult == TLD && domain_A_response.is_DNSSEC_response() && verifyServer(domain_DNSKEY_response, &domain_A_response, TLD_DS_response->getData_RR()->getData()) ? Domain : TLD;
 
     if(domain_A_response.is_DNSSEC_response())
     {
@@ -81,7 +79,7 @@ DNSSEC_Level DNSSEC::getFilterResult() const
 
 // Private Methods
 
-bool DNSSEC::verifyServer(const DnsMessage * dnskey_response, const DnsMessage * data_response) const
+bool DNSSEC::verifyServer(const DnsMessage * dnskey_response, const DnsMessage * data_response, const std::vector<unsigned char>& ds) const
 {
     if(dnskey_response == nullptr)
         return false;
@@ -89,6 +87,10 @@ bool DNSSEC::verifyServer(const DnsMessage * dnskey_response, const DnsMessage *
     std::vector<DNS_DNSKEY_Answer> keys = dnskey_response->getResponse_RRset<DNS_DNSKEY_Answer>();
     std::vector<DNS_RRSIG_Answer> keys_sigs = dnskey_response->getResponse_RRset<DNS_RRSIG_Answer>();
     DNS_DNSKEY_Answer ksk = DNS_DNSKEY_Answer::extractKSK(keys);
+
+    // If DS was sent from a parent zone and the digest of the public KSK and the DS aren't equal the server isn't valid
+    if(!ds.empty() && toDS(ksk.getDigestFormat(), algorithmToHash.at(ksk.getAlgorithm())).size() != ds.size())
+        return false;
 
     // Validate the public key
     for(const auto& sig : keys_sigs)
@@ -112,11 +114,42 @@ bool DNSSEC::verifyServer(const DnsMessage * dnskey_response, const DnsMessage *
     // Tries every key to verify the data (could improve efficiency)
     for(const auto& key : keys)
     {
-        if(!verifyData(data, key, data_sig))
-            return false;
+        if(verifyData(data, key, data_sig))
+            return true;
     }
 
-    return true;
+    return false;
+}
+
+std::vector<unsigned char> DNSSEC::toDS(const std::vector<unsigned char>& dnsKey, const EVP_MD * hashFunction) const
+{
+    std::vector<unsigned char> digest;
+
+    EVP_MD_CTX* mdContext = EVP_MD_CTX_new();
+    if (mdContext == nullptr) {
+        return digest; // Return an empty vector on failure
+    }
+
+    if (EVP_DigestInit_ex(mdContext, hashFunction, nullptr) != 1) {
+        EVP_MD_CTX_free(mdContext);
+        return digest; // Return an empty vector on failure
+    }
+
+    if (EVP_DigestUpdate(mdContext, dnsKey.data(), dnsKey.size()) != 1) {
+        EVP_MD_CTX_free(mdContext);
+        return digest; // Return an empty vector on failure
+    }
+
+    digest.resize(EVP_MD_size(hashFunction));
+
+    if (EVP_DigestFinal_ex(mdContext, digest.data(), nullptr) != 1) {
+        EVP_MD_CTX_free(mdContext);
+        return {}; // Return an empty vector on failure
+    }
+
+    EVP_MD_CTX_free(mdContext);
+
+    return digest;
 }
 
 bool DNSSEC::verifyData(const DNS_Answer * data, const DNS_DNSKEY_Answer & key, const DNS_RRSIG_Answer & signature) const

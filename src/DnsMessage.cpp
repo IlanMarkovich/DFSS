@@ -42,7 +42,7 @@ DnsMessage::DnsMessage(const std::vector<unsigned char>& message)
                 _DNSSEC_response = true;
                 break;
             case DNS_DNSKEY:
-                answer = new DNS_DNSKEY_Answer(type, message, index);
+                answer = new DNS_DNSKEY_Answer(type, message, index, domainToBuffer(queryName));
                 break;
             case DNS_DS:
                 answer = new DNS_DS_Answer(type, message, index);
@@ -116,21 +116,7 @@ void DnsMessage::changeQueryName(const std::string & newQueryName)
     const int QUERY_NAME_START_INDEX = 12;
     _messageInBytes.erase(_messageInBytes.begin() + QUERY_NAME_START_INDEX, _messageInBytes.begin() + QUERY_NAME_START_INDEX + countName + 1);
 
-    std::vector<unsigned char> newQueryNameBuffer;
-    std::vector<unsigned char> buffer;
-
-    for(unsigned int i = 0; i <= newQueryName.size(); i++)
-    {
-        if(i == newQueryName.size() || newQueryName[i] == '.')
-        {
-            buffer.insert(buffer.begin(), (unsigned char)buffer.size());
-            newQueryNameBuffer.insert(newQueryNameBuffer.end(), buffer.begin(), buffer.end());
-            buffer = std::vector<unsigned char>();
-            continue;
-        }
-
-        buffer.push_back(newQueryName[i]);
-    }
+    std::vector<unsigned char> newQueryNameBuffer = domainToBuffer(newQueryName);
 
     if(countName == 0)
         newQueryNameBuffer.push_back('\0');
@@ -167,4 +153,27 @@ std::string DnsMessage::getTLD(const std::string & domain)
         index++;
 
     return std::string(domain.begin() + index, domain.end());
+}
+
+// Private Methods
+
+std::vector<unsigned char> DnsMessage::domainToBuffer(const std::string & domain) const
+{
+    std::vector<unsigned char> domainBuffer;
+    std::vector<unsigned char> buffer;
+
+    for(unsigned int i = 0; i <= domain.size(); i++)
+    {
+        if(i == domain.size() || domain[i] == '.')
+        {
+            buffer.insert(buffer.begin(), (unsigned char)buffer.size());
+            domainBuffer.insert(domainBuffer.end(), buffer.begin(), buffer.end());
+            buffer = std::vector<unsigned char>();
+            continue;
+        }
+
+        buffer.push_back(domain[i]);
+    }
+
+    return domainBuffer;
 }

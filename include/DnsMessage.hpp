@@ -85,6 +85,12 @@ public:
     /// @param domain The domain where the TLD is taken from
     /// @return The TLD (Top Level Domain)
     static std::string getTLD(const std::string& domain);
+
+private:
+    /// @brief Converts a domain in std::string to a buffer of bytes in the format of DNS
+    /// @param domain The given domain input
+    /// @return The buffer of bytes in DNS domain format
+    std::vector<unsigned char> domainToBuffer(const std::string& domain) const;
 };
 
 // Public Template Methods

@@ -11,6 +11,9 @@
 #include <openssl/pem.h>
 #include <openssl/bn.h>
 
+#define RSASHA1 5
+#define RSASHA256 8
+#define RSASHA512 10
 #define ECDSAP256SHA256 13
 #define ECDSAP384SHA384 14
 
@@ -50,8 +53,15 @@ private:
     /// and do cryptographic validation checks with their digital signatures for authentication check
     /// @param dnskey_response Contains the DNSKEYS (KSK and ZSK) used for the cryptographic checks
     /// @param data_response Contains some sort of data which the DNS server send (A for ipv4 response or Dlegetion Signer for authentication of child zones)
+    /// @param ds Contains the digest of the public KSK from the parent zone. Used to verify the public KSK
     /// @return Was the verification successful
-    bool verifyServer(const DnsMessage* dnskey_response, const DnsMessage* data_response) const;
+    bool verifyServer(const DnsMessage* dnskey_response, const DnsMessage* data_response, const std::vector<unsigned char>& ds = std::vector<unsigned char>()) const;
+
+    /// @brief Converts a DNSKEY (given its hashing function) to a digest (which is supposed to be the DS of the parent server)
+    /// @param dnsKey The DNSKEY being converted (it's digest format: owner | rdata)
+    /// @param hashFunction The hash function of the algorithm
+    /// @return The convertion of the DNSKEY
+    std::vector<unsigned char> toDS(const std::vector<unsigned char>& dnsKey, const EVP_MD* hashFunction) const;
 
     /// @brief Verify given its Public Key (KSK if data is key, ZSK if not), and a digital signature
     /// which is the result of encrypting the digest of the data using the DNS server's private key

@@ -1,13 +1,16 @@
 #include <iostream>
+#include <openssl/evp.h>
+
 #include "Server.h"
 #include "ServerException.h"
-
 #include "DatabaseManager.h"
 
 // If this run is NOT a test
 #ifndef TEST
 int main()
 {
+    OpenSSL_add_all_algorithms();
+
     try
     {
         Server server;
