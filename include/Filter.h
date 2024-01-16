@@ -11,9 +11,11 @@ class Filter
 {
 public:
     // Fields
+
     static int requestAmount;
     static int externalBlocks;
 private:
+
     DnsMessage _dnsReq;
     DatabaseManager& _dbManager;
     bool _filterResult;
@@ -30,4 +32,5 @@ private:
 
     bool databaseFilter() const;
     bool externalUrlFilter() const;
+    bool DNSSEC_Filter() const;
 };
