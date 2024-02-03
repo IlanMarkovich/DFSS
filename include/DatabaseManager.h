@@ -9,7 +9,7 @@
 #include <string>
 #include <optional>
 
-#include "DnsMessage.h"
+#include "DnsMessage.hpp"
 #include "Filter.h"
 
 #define URI "./db"

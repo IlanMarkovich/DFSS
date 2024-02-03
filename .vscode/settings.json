@@ -1,6 +1,5 @@
 {
     "files.associations": {
-<<<<<<< HEAD
         "array": "cpp",
         "atomic": "cpp",
         "bit": "cpp",
@@ -48,10 +47,22 @@
         "typeinfo": "cpp",
         "ctime": "cpp",
         "iomanip": "cpp",
-=======
+        "sstream": "cpp",
+        "bitset": "cpp",
+        "chrono": "cpp",
+        "condition_variable": "cpp",
+        "list": "cpp",
+        "map": "cpp",
         "optional": "cpp",
->>>>>>> c3f23262b52bd39235d222ea62f34ef7efa0ba1a
-        "sstream": "cpp"
+        "ratio": "cpp",
+        "regex": "cpp",
+        "fstream": "cpp",
+        "future": "cpp",
+        "mutex": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp",
+        "cinttypes": "cpp"
     },
     "C_Cpp.dimInactiveRegions": false
 }

@@ -19,7 +19,7 @@
 #include "SocketCreationException.h"
 #include "SocketBindException.h"
 
-#include "DnsMessage.h"
+#include "DnsMessage.hpp"
 #include "DatabaseManager.h"
 #include "FileLoader.h"
 
@@ -51,7 +51,6 @@ private:
     FileLoader _fileLoader;
 
     void bind_user(req* r);
-    std::vector<unsigned char> DomainIPFetcher(std::vector<unsigned char>& input);
 public:
     // C tor
     Communicator();
@@ -64,4 +63,5 @@ public:
 
     void listen();
     void stopListening();
+    static std::vector<unsigned char> DNS_ResponseFetcher(const std::vector<unsigned char>& input);
 };

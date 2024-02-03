@@ -79,9 +79,7 @@ void Communicator::stopListening()
     _listen.store(false);
 }
 
-// Private Methods
-
-void Communicator::bind_user(req* r)
+std::vector<unsigned char> Communicator::DNS_ResponseFetcher(const std::vector<unsigned char>& input)
 {
     Filter filter(*(r->dnsMsg.get()), _dbManager);
 
@@ -132,3 +130,22 @@ std::vector<unsigned char> Communicator::DomainIPFetcher(std::vector<unsigned ch
     close(sockfd);
     return std::vector<unsigned char>(response, response + received_bytes);
 }
+
+// Private Methods
+
+void Communicator::bind_user(req* r)
+{
+    Filter filter(*(r->dnsMsg.get()), _dbManager);
+
+    // If the DNS message isn't valid
+    if(filter.getFilterResult())
+    {
+        return;
+    }
+
+    std::vector<unsigned char> response = Communicator::DNS_ResponseFetcher(r->data);
+
+    // Send the response back to the client
+    sendto(fd, response.data(), response.size(), 0, (struct sockaddr*)&r->clientaddr, sizeof(r->clientaddr));
+}
+

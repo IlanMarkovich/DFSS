@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include "Server.h"
+#include "DNSSEC.h"
 
 // Init static variables
 int Filter::requestAmount = 0;
@@ -27,7 +28,8 @@ Filter::Filter(const DnsMessage & dnsReq, DatabaseManager & dbManagger)
     }
 
     _filterResult = databaseFilter()
-        || externalUrlFilter();
+        || externalUrlFilter()
+        || DNSSEC_Filter();
 
     // Cache the query and the result in the cache collection in the database
     _dbManager.cacheDnsQuery(dnsReq.getQuery(), _filterResult);
@@ -72,4 +74,12 @@ bool Filter::externalUrlFilter() const
     file.close();
 
     return result;
+}
+
+bool Filter::DNSSEC_Filter() const
+{
+    // Does the DNSSEC communication and authentication verification
+    DNSSEC dnssec(_dnsReq);
+
+    return dnssec.getFilterResult() == TLD && dnssec.getFilterResult() == Domain;
 }
