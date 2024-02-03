@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Communicator.h"
-
 #include <mutex>
+
+
+#define DNSSCRYPT_START "sudo ./dnscrypt/dnscrypt-proxy -service start"
 
 class Server
 {
