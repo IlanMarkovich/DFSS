@@ -2,6 +2,8 @@
 
 #include <thread>
 
+
+
 // Static variables initialization
 std::mutex Server::dbMutex;
 
@@ -12,6 +14,9 @@ Server::Server() : m_communicator() {}
 
 void Server::run()
 {
+    // start dnscrypt program
+    system(DNSSCRYPT_START);
+
     std::thread listeningThread(&Communicator::listen, &m_communicator);
     string cmd;
 
@@ -26,6 +31,7 @@ void Server::run()
 
     m_communicator.stopListening();
     listeningThread.join();
+
 }
 
 // Private Methods
