@@ -100,8 +100,8 @@ void Communicator::bind_user(req* r)
 
 std::vector<unsigned char> Communicator::DomainIPFetcher(std::vector<unsigned char>& input)
 {
-    const char* dns_server = "8.8.8.8";
-    const int dns_port = 53;
+    const char* dns_server = "127.0.0.1";
+    const int dns_port = 54;
     char response[4096];  // Adjust the size as needed
 
     // Create a UDP socket
