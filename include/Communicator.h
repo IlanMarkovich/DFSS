@@ -51,6 +51,7 @@ private:
     FileLoader _fileLoader;
 
     void bind_user(req* r);
+    bool SOP_validation(const std::vector<unsigned char>& response);
 public:
     // C tor
     Communicator();

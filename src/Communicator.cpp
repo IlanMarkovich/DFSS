@@ -81,8 +81,8 @@ void Communicator::stopListening()
 
 std::vector<unsigned char> Communicator::DNS_ResponseFetcher(const std::vector<unsigned char>& input)
 {
-    const char* dns_server = "127.0.0.1";
-    const int dns_port = 54;
+    const char* dns_server = "1.1.1.1";
+    const int dns_port = 53;
     char response[4096];  // Adjust the size as needed
 
     // Create a UDP socket
@@ -128,7 +128,19 @@ void Communicator::bind_user(req* r)
 
     std::vector<unsigned char> response = Communicator::DNS_ResponseFetcher(r->data);
 
+    if(!SOP_validation(response))
+        return;
+
     // Send the response back to the client
     sendto(fd, response.data(), response.size(), 0, (struct sockaddr*)&r->clientaddr, sizeof(r->clientaddr));
 }
 
+bool Communicator::SOP_validation(const std::vector<unsigned char>& response)
+{
+    DnsMessage responseMsg(response);
+    std::vector<unsigned char> ip = responseMsg.getResponse_RRset<DNS_A_Answer>()[0].get_IP_address();
+
+    // Checks if the ip address from the resposne isn't an IP address which cannot be used in the internet
+    return !(ip[0] == 10 || (ip[0] == 172 && ip[1] >= 16 && ip[1] <= 31) || (ip[0] == 192 && ip[1] == 168) ||
+        ip[0] == 127 || (ip[0] == 169 && ip[1] == 254) || (ip[0] >= 224 && ip[0] <= 239));
+}

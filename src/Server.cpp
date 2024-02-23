@@ -1,8 +1,7 @@
 #include "Server.h"
 
 #include <thread>
-
-
+#include <sys/stat.h>
 
 // Static variables initialization
 std::mutex Server::dbMutex;
@@ -14,6 +13,22 @@ Server::Server() : m_communicator() {}
 
 void Server::run()
 {
+    //check if dnscrypt program was installed and if not install it
+
+    // Structure which would store the metadata
+    struct stat sb;
+
+    if (!(stat(PATH, &sb) == 0 && !(sb.st_mode & S_IFDIR)))
+    {
+        std::string cmdMakeDirInOpt = "sudo mkdir ";
+        cmdMakeDirInOpt += PATH;
+        system(cmdMakeDirInOpt.c_str());
+        cmdMakeDirInOpt = "mv  -v ./dnscrypt/* ";
+        cmdMakeDirInOpt += PATH;
+        system(cmdMakeDirInOpt.c_str());
+        system(DNSSCRYPT_INSTALL);
+    }
+
     // start dnscrypt program
     system(DNSSCRYPT_START);
 
@@ -32,6 +47,8 @@ void Server::run()
     m_communicator.stopListening();
     listeningThread.join();
 
+    // stop dnscrypt program
+    system(DNSSCRYPT_STOP);
 }
 
 // Private Methods
