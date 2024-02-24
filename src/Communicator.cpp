@@ -138,7 +138,12 @@ void Communicator::bind_user(req* r)
 bool Communicator::SOP_validation(const std::vector<unsigned char>& response)
 {
     DnsMessage responseMsg(response);
-    std::vector<unsigned char> ip = responseMsg.getResponse_RRset<DNS_A_Answer>()[0].get_IP_address();
+    
+    // If there is no A answer just skip the SOP validation check (because its probabaly SOA response)
+    if(dynamic_cast<DNS_A_Answer*>(responseMsg.getData_RR()) == nullptr)
+        return true;
+
+    std::vector<unsigned char> ip = dynamic_cast<DNS_A_Answer*>(responseMsg.getData_RR())->get_IP_address();
 
     // Checks if the ip address from the resposne isn't an IP address which cannot be used in the internet
     return !(ip[0] == 10 || (ip[0] == 172 && ip[1] >= 16 && ip[1] <= 31) || (ip[0] == 192 && ip[1] == 168) ||

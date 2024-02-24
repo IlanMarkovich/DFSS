@@ -86,6 +86,9 @@ DNS_Answer * DnsMessage::getData_RR() const
     // Checks if an answer is DS or A answer type, and if so returns it
     for(const auto& answer : _answers)
     {
+        if(answer == nullptr)
+            continue;
+
         switch(answer->getType())
         {
             case DNS_DS:
