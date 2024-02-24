@@ -1,4 +1,5 @@
 #include <iostream>
+#include <map>
 #include <regex>
 #include "RegexFilterSizeException.h"
 
@@ -15,7 +16,8 @@ class RegexFilter
         std::string regexPatternLettersAdded;
         bool FilterSameLength(std::string url);
         bool FilterDifferentLength(std::string url);
-
+        std::string GetSimillercharacters(char c);
+        static const std::map<char, char> similar_chars_map;
     public:
         RegexFilter(std::string url);
         bool Filter(std::string url);
