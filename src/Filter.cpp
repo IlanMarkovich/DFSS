@@ -5,6 +5,7 @@
 
 #include "Server.h"
 #include "DNSSEC.h"
+#include "RegexFilter.h"
 
 // Init static variables
 int Filter::requestAmount = 0;
@@ -29,6 +30,7 @@ Filter::Filter(const DnsMessage & dnsReq, DatabaseManager & dbManagger)
 
     _filterResult = databaseFilter()
         || externalUrlFilter()
+        || phishingFilter()
         || DNSSEC_Filter();
 
     // Cache the query and the result in the cache collection in the database
@@ -72,6 +74,36 @@ bool Filter::externalUrlFilter() const
     }
 
     file.close();
+
+    return result;
+}
+
+bool Filter::phishingFilter() const
+{
+    bool result = false;
+
+    try
+    {
+        RegexFilter filter(_dnsReq.getQuery().name);
+
+        std::ifstream file("./top_domains.txt");
+        string url;
+
+        while(std::getline(file, url) && !result)
+        {
+            if(filter.Filter(url))
+            {
+                externalBlocks++;
+                result = true;
+            }
+        }
+
+        file.close();
+    }
+    catch(const std::exception& e)
+    {
+        return false;
+    }
 
     return result;
 }

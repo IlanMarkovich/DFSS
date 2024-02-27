@@ -50,7 +50,7 @@ std::string RegexFilter::GetSimillercharacters(char c)
 
 RegexFilter::RegexFilter(std::string url)
 {
-    if(url.size() < MIN_LENGTH)
+    if(url.find(".") < MIN_LENGTH)
     {
         throw RegexFilterSizeException(); // the string is too small to make assumption
     }
@@ -92,9 +92,9 @@ RegexFilter::RegexFilter(std::string url)
 
 bool RegexFilter::Filter(std::string url)
 {
-    if(url.size() < MIN_LENGTH)
+    if(url.find(".") < MIN_LENGTH)
     {
-        throw RegexFilterSizeException(); // the string is too small to make assumption
+        return false; // the string is too small to make assumption
     }
     int LengthDifference = abs(url.size() - this->url.size());
 
@@ -127,9 +127,24 @@ bool RegexFilter::FilterDifferentLength(std::string url)
     {
         return false;// the difference is too big to make assumption
     }
-    else if(std::regex_search(url, std::regex(regexPatternLettersAdded)))
-    {
-        return true; // the same url but random charcters have been added 
-    }
+    
+    //return countDiff(url, this->url) <= 2;
     return false;
+}
+
+int RegexFilter::countDiff(std::string a, std::string b)
+{
+    if (a.size() == 0 || b.size() == 0)
+    {
+        return b.size() + a.size();
+    }
+
+    if (a[0] == b[0])
+    {
+        return countDiff(a.substr(1), b.substr(1));
+    }
+
+    int countA = countDiff(a.substr(1), b);
+    int countB = countDiff(a, b.substr(1));
+    return std::min(countA, countB) + 1;
 }

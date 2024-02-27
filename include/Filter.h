@@ -32,5 +32,6 @@ private:
 
     bool databaseFilter() const;
     bool externalUrlFilter() const;
+    bool phishingFilter() const;
     bool DNSSEC_Filter() const;
 };
