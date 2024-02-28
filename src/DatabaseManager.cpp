@@ -25,7 +25,7 @@ DatabaseManager::DatabaseManager()
 
     _connection = mongocxx::client{ mongocxx::uri{}, client_options };
     
-    // Create the cache collection at the star
+    // Create the cache collection at the start
     mongocxx::options::create_collection cache_options;
     cache_options.capped(true);
     cache_options.size(MAX_CACHE_SIZE);
@@ -99,6 +99,27 @@ std::optional<bool> DatabaseManager::cacheQueryFilterResult(const struct Query &
 
     // If no query was matched from the cache return an empty optional variable
     return std::optional<bool>();
+}
+
+bool DatabaseManager::isFeatureTurnedOn(const std::string & feature)
+{
+    document filter;
+    filter << "feature" << feature;
+    struct core::v1::optional<bsoncxx::v_noabi::document::value> doc;
+
+    if(doc = _connection[FILTER_DB]["Features"].find_one(filter.view()))
+    {
+        // Returns the status of the security feature
+        return doc->operator[]("status").get_bool().value;
+    }
+
+    // If features doesn't exist, create it and make it turned on by default
+    document insert;
+    insert << "feature" << feature;
+    insert << "status" << true;
+    _connection[FILTER_DB]["Features"].insert_one(insert.view());
+
+    return true;
 }
 
 // Private Methods
