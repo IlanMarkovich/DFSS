@@ -16,22 +16,26 @@ Filter::Filter(const DnsMessage & dnsReq, DatabaseManager & dbManagger)
  : _dnsReq(dnsReq), _dbManager(dbManagger)
 {
     requestAmount++;
+    _filterResult = databaseFilter();
     
-    // Check if the DNS request's query is saved in the cache collection
+    if(!_filterResult)
     {
-        std::optional<bool> prevFilterResult;
-
-        if((prevFilterResult = _dbManager.cacheQueryFilterResult(dnsReq.getQuery())).has_value())
+        // Check if the DNS request's query is saved in the cache collection
+        if(_dbManager.isFeatureTurnedOn("cache"))
         {
-            _filterResult = prevFilterResult.value();
-            return;
-        }
-    }
+            std::optional<bool> prevFilterResult;
 
-    _filterResult = databaseFilter()
-        || externalUrlFilter()
-        || phishingFilter()
-        || DNSSEC_Filter();
+            if((prevFilterResult = _dbManager.cacheQueryFilterResult(dnsReq.getQuery())).has_value())
+            {
+                _filterResult = prevFilterResult.value();
+                return;
+            }
+        }
+
+        _filterResult = externalUrlFilter()
+            || phishingFilter()
+            || DNSSEC_Filter();
+    }
 
     // Cache the query and the result in the cache collection in the database
     _dbManager.cacheDnsQuery(dnsReq.getQuery(), _filterResult);
@@ -48,6 +52,9 @@ bool Filter::getFilterResult() const
 
 bool Filter::databaseFilter() const
 {
+    if(!_dbManager.isFeatureTurnedOn("blwl"))
+        return false;
+
     string url = _dnsReq.getQuery().name;
 
     // Protect the `_dbManager` resource which can be accessed by other threads
@@ -58,6 +65,9 @@ bool Filter::databaseFilter() const
 
 bool Filter::externalUrlFilter() const
 {
+    if(!_dbManager.isFeatureTurnedOn("external"))
+        return false;
+
     bool result = false;
 
     std::ifstream file("./ext_url.txt");
@@ -80,6 +90,9 @@ bool Filter::externalUrlFilter() const
 
 bool Filter::phishingFilter() const
 {
+    if(!_dbManager.isFeatureTurnedOn("phishing"))
+        return false;
+
     bool result = false;
 
     try
@@ -110,6 +123,9 @@ bool Filter::phishingFilter() const
 
 bool Filter::DNSSEC_Filter() const
 {
+    if(!_dbManager.isFeatureTurnedOn("DNSSEC"))
+        return false;
+
     // Does the DNSSEC communication and authentication verification
     DNSSEC dnssec(_dnsReq);
 

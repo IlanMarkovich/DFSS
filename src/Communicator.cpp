@@ -128,7 +128,7 @@ void Communicator::bind_user(req* r)
 
     std::vector<unsigned char> response = Communicator::DNS_ResponseFetcher(r->data);
 
-    if(!SOP_validation(response))
+    if(_dbManager.isFeatureTurnedOn("SOP") && !SOP_validation(response))
         return;
 
     // Send the response back to the client

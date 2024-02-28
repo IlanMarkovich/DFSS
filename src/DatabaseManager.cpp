@@ -122,6 +122,27 @@ bool DatabaseManager::isFeatureTurnedOn(const std::string & feature)
     return true;
 }
 
+void DatabaseManager::changeFeatureStatus(const std::string & feature)
+{
+    document filter;
+    filter << "feature" << feature;
+    struct core::v1::optional<bsoncxx::v_noabi::document::value> doc;
+
+    if(doc = _connection[FILTER_DB]["Features"].find_one(filter.view()))
+    {
+        bool currentStatus = !(doc->operator[]("status").get_bool().value);
+
+        document update;
+        update << "$set" << bsoncxx::builder::stream::open_document
+            << "status" << currentStatus << bsoncxx::builder::stream::close_document;
+        _connection[FILTER_DB]["Features"].update_one(filter.view(), update.view());
+
+        return;
+    }
+
+    throw std::exception();
+}
+
 // Private Methods
 
 bool DatabaseManager::queryUrl(const string& url, const string& collection) const

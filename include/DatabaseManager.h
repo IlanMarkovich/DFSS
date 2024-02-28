@@ -73,10 +73,15 @@ public:
     /// @return An optional variable (if there is a value it's in the cache)
     std::optional<bool> cacheQueryFilterResult(const struct Query& dnsQuery);
 
-    /// @brief Get the status of a security feature
+    /// @brief Get the status of a security feature, and if it doesn't exist create it
     /// @param feature The feature which status is being required
     /// @return The status of the feature given
     bool isFeatureTurnedOn(const std::string& feature);
+
+    /// @brief Change the status of a certain feature
+    /// @throws Exception thrown when feature doesn't exist
+    /// @param feature The feature which status is begin changed
+    void changeFeatureStatus(const std::string& feature);
 
 private:
     /// @brief Queries a DB to see if a certain `url` exists in the collection `collection`

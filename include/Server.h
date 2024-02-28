@@ -19,7 +19,8 @@ private:
     const std::map<std::string, std::function<void()>> _commands = {
         { "help", [this](){ printHelp(); } },
         { "show security", [this](){ printSecurityFeatures(); } },
-        { "ssec", [this](){ printSecurityFeatures(); } }
+        { "ssec", [this](){ printSecurityFeatures(); } },
+        { "change", [this](){ changeFeatureStatus(); } }
     };
 
 public:
@@ -28,6 +29,9 @@ public:
 
 private:
     void printHelp() const;
+
     void printSecurityFeatures();
     std::string getFeatureStatus(bool status) const;
+
+    void changeFeatureStatus();
 };
