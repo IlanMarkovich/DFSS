@@ -65,11 +65,17 @@ bool DatabaseManager::isUrlWhitelisted(const string & url, bool isFiltering)
 
 void DatabaseManager::blacklistUrl(const string & url)
 {
+    if(isUrlWhitelisted(url, false))
+        return;
+
     listUrl(url, "Blacklist-URLs");
 }
 
 void DatabaseManager::whitelistUrl(const string & url)
 {
+    if(isUrlBlacklisted(url, false))
+        return;
+
     listUrl(url, "Whitelist-URLs");
 }
 
@@ -165,14 +171,15 @@ document DatabaseManager::buildDnsQueryDocument(const Query & dnsQuery) const
 
 void DatabaseManager::listUrl(const string & url, const string & collection)
 {
-    if(isUrlBlacklisted(url, false) || isUrlWhitelisted(url, false))
-    {
-        std::cerr << "URL already listed!" << std::endl;
-        return;
-    }
-
     document doc;
     doc << "url" << url;
+
+    // If the URL is already in the list, remove the URL from list
+    if(isUrlBlacklisted(url, false) || isUrlWhitelisted(url, false))
+    {
+        _connection[FILTER_DB][collection].delete_one(doc.view());
+        return;
+    }
 
     _connection[FILTER_DB][collection].insert_one(doc.view());
 }

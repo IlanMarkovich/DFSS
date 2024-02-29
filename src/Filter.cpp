@@ -20,6 +20,8 @@ Filter::Filter(const DnsMessage & dnsReq, DatabaseManager & dbManagger)
     
     if(!_filterResult)
     {
+        std::lock_guard<std::mutex> dbLock(Server::dbMutex);
+
         // Check if the DNS request's query is saved in the cache collection
         if(_dbManager.isFeatureTurnedOn("cache"))
         {
@@ -52,13 +54,13 @@ bool Filter::getFilterResult() const
 
 bool Filter::databaseFilter() const
 {
+    // Protect the `_dbManager` resource which can be accessed by other threads
+    std::lock_guard<std::mutex> dbLock(Server::dbMutex);
+
     if(!_dbManager.isFeatureTurnedOn("blwl"))
         return false;
 
     string url = _dnsReq.getQuery().name;
-
-    // Protect the `_dbManager` resource which can be accessed by other threads
-    std::lock_guard<std::mutex> dbLock(Server::dbMutex);
 
     return !_dbManager.isUrlWhitelisted(url, true) && _dbManager.isUrlBlacklisted(url, true);
 }

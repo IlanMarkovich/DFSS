@@ -60,7 +60,11 @@ void Server::run()
 
 void Server::printHelp() const
 {
-    std::cout << "show security OR ssec : Show all security features of the firewall, and show their current status (ON/OFF)" << std::endl;
+    std::cout << "help / ? : Print all commands avaliable for the user to use";
+    std::cout << "show : Show all security features of the firewall, and show their current status (ON/OFF)" << std::endl;
+    std::cout << "change : Change the status of a certain security feature" << std::endl;
+    std::cout << "blacklist / bl : Add or remove a certain URL in a blacklist, meaning this URL cannot be accessed while the firewall is on" << std::endl;
+    std::cout << "whitelist / wl : Add or remove a certain URL in a whitelist, meaning this URL can always be access while firewall is on, and no security feature will activate while trying to access it" << std::endl;
 }
 
 void Server::printSecurityFeatures()
@@ -104,23 +108,28 @@ void Server::changeFeatureStatus()
     {
         m_communicator.getDatabaseManager().changeFeatureStatus(feature);
     }
-    catch (std::exception& e)
+    catch (const std::exception& e)
     {
         std::cerr << "Feature name not found! Be sure to type the feature name exactly as shown." << std::endl;
     }
 }
 
-// string url;
-// std::cout << std::endl << "Enter URL: ";
-// std::cin >> url;
+void Server::blacklist()
+{
+    std::string url;
+    std::cout << std::endl << "Enter URL: ";
+    std::cin >> url;
 
-// if(cmd == "bl")
-// {
-//     std::lock_guard<std::mutex> dbLock(dbMutex);
-//     m_communicator.getDatabaseManager().blacklistUrl(url);
-// }
-// else if(cmd == "wl")
-// {
-//     std::lock_guard<std::mutex> dbLock(dbMutex);
-//     m_communicator.getDatabaseManager().whitelistUrl(url);
-// }
+    std::lock_guard<std::mutex> dbLock(dbMutex);
+    m_communicator.getDatabaseManager().blacklistUrl(url);
+}
+
+void Server::whitelist()
+{
+    std::string url;
+    std::cout << std::endl << "Enter URL: ";
+    std::cin >> url;
+
+    std::lock_guard<std::mutex> dbLock(dbMutex);
+    m_communicator.getDatabaseManager().whitelistUrl(url);
+}

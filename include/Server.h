@@ -18,9 +18,13 @@ private:
     Communicator m_communicator;
     const std::map<std::string, std::function<void()>> _commands = {
         { "help", [this](){ printHelp(); } },
-        { "show security", [this](){ printSecurityFeatures(); } },
-        { "ssec", [this](){ printSecurityFeatures(); } },
-        { "change", [this](){ changeFeatureStatus(); } }
+        { "?", [this](){ printHelp(); } },
+        { "show", [this](){ printSecurityFeatures(); } },
+        { "change", [this](){ changeFeatureStatus(); } },
+        { "blacklist", [this](){ blacklist(); } },
+        { "bl", [this](){ blacklist(); } },
+        { "whitelist", [this](){ whitelist(); } },
+        { "wl", [this](){ whitelist(); } }
     };
 
 public:
@@ -34,4 +38,7 @@ private:
     std::string getFeatureStatus(bool status) const;
 
     void changeFeatureStatus();
+
+    void blacklist();
+    void whitelist();
 };
