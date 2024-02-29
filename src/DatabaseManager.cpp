@@ -180,6 +180,9 @@ std::vector<std::string> DatabaseManager::getDataList(const std::string& db, con
             logStr += "Blacklist: " + std::string(log["blacklist_blocks"].get_string().value) + '\n';
             logStr += "Cache: " + std::string(log["cache_blocks"].get_string().value) + '\n';
             logStr += "External: " + std::string(log["external_blocks"].get_string().value) + '\n';
+            logStr += "Phishing: " + std::string(log["phishing_blocks"].get_string().value) + '\n';
+            logStr += "DNSSEC: " + std::string(log["DNSSEC_blocks"].get_string().value) + '\n';
+            logStr += "SOP: " + std::string(log["SOP_blocks"].get_string().value) + '\n';
             logStr += "Amount of requests: " + std::string(log["amount_of_requests"].get_string().value) + '\n';
 
             logStr += "\nQueries:\n";
@@ -241,6 +244,9 @@ void DatabaseManager::log()
     doc << "whitelist_blocks" << _whitelistBlocks;
     doc << "cache_blocks" << _cacheBlocks;
     doc << "external_blocks" << Filter::externalBlocks;
+    doc << "phishing_blocks" << Filter::phishingBlocks;
+    doc << "DNSSEC_blocks" << Filter::DNSSEC_Blocks;
+    doc << "SOP_blocks" << Filter::SOP_Blocks;
     doc << "amount_of_requests" << Filter::requestAmount;
 
     bsoncxx::builder::basic::array arrBuilder;
@@ -258,6 +264,9 @@ void DatabaseManager::log()
     _whitelistBlocks = 0;
     _cacheBlocks = 0;
     Filter::externalBlocks = 0;
+    Filter::phishingBlocks = 0;
+    Filter::DNSSEC_Blocks = 0;
+    Filter::SOP_Blocks = 0;
     Filter::requestAmount = 0;
     _connection[FILTER_DB]["Cache"].delete_many(bsoncxx::v_noabi::document::view_or_value());
 }

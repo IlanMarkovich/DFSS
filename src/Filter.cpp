@@ -10,6 +10,9 @@
 // Init static variables
 int Filter::requestAmount = 0;
 int Filter::externalBlocks = 0;
+int Filter::phishingBlocks = 0;
+int Filter::DNSSEC_Blocks = 0;
+int Filter::SOP_Blocks = 0;
 
 // C'tor
 Filter::Filter(const DnsMessage & dnsReq, DatabaseManager & dbManagger)
@@ -108,7 +111,7 @@ bool Filter::phishingFilter() const
         {
             if(filter.Filter(url))
             {
-                externalBlocks++;
+                phishingBlocks++;
                 result = true;
             }
         }
@@ -131,5 +134,11 @@ bool Filter::DNSSEC_Filter() const
     // Does the DNSSEC communication and authentication verification
     DNSSEC dnssec(_dnsReq);
 
-    return dnssec.getFilterResult() == TLD && dnssec.getFilterResult() == Domain;
+    if(dnssec.getFilterResult() == TLD && dnssec.getFilterResult() == Domain)
+    {
+        DNSSEC_Blocks++;
+        return true;
+    }
+
+    return false;
 }
