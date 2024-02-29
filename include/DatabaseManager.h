@@ -83,6 +83,7 @@ public:
     /// @param feature The feature which status is begin changed
     void changeFeatureStatus(const std::string& feature);
 
+    std::vector<std::string> getDataList(const std::string& db, const std::string& collection) const;
 private:
     /// @brief Queries a DB to see if a certain `url` exists in the collection `collection`
     /// @param url The URL being queried

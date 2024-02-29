@@ -24,7 +24,8 @@ private:
         { "blacklist", [this](){ blacklist(); } },
         { "bl", [this](){ blacklist(); } },
         { "whitelist", [this](){ whitelist(); } },
-        { "wl", [this](){ whitelist(); } }
+        { "wl", [this](){ whitelist(); } },
+        { "view", [this](){ viewDatabase(); } }
     };
 
 public:
@@ -33,12 +34,10 @@ public:
 
 private:
     void printHelp() const;
-
     void printSecurityFeatures();
     std::string getFeatureStatus(bool status) const;
-
     void changeFeatureStatus();
-
     void blacklist();
     void whitelist();
+    void viewDatabase();
 };

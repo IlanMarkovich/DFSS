@@ -149,6 +149,56 @@ void DatabaseManager::changeFeatureStatus(const std::string & feature)
     throw std::exception();
 }
 
+std::vector<std::string> DatabaseManager::getDataList(const std::string& db, const std::string& collection) const
+{
+    document find;
+    auto list = _connection[db][collection].find(find.view());
+    std::vector<std::string> output;
+
+    if(collection == "Blacklist-URLs" || collection == "Whitelist-URLs")
+    {
+        for(auto url : list)
+        {
+            output.push_back(std::string((url["url"].get_string().value)));
+        }
+    }
+    else if(collection == "Cache")
+    {
+        for(auto cache : list)
+        {
+            std::string cacheStr = "Url: " + std::string(cache["name"].get_string().value) + '\n';
+            cacheStr += "Filter Result: " + std::string(cache["filter_result"].get_bool().value ? "filtered" : "not filtered");
+            output.push_back(cacheStr);
+        }
+    }
+    else if(collection == "Logs")
+    {
+        for(auto log : list)
+        {
+            std::string logStr = "Blocks:\n";
+            logStr += "Whitelist: " + std::string(log["whitelist_blocks"].get_string().value) + '\n';
+            logStr += "Blacklist: " + std::string(log["blacklist_blocks"].get_string().value) + '\n';
+            logStr += "Cache: " + std::string(log["cache_blocks"].get_string().value) + '\n';
+            logStr += "External: " + std::string(log["external_blocks"].get_string().value) + '\n';
+            logStr += "Amount of requests: " + std::string(log["amount_of_requests"].get_string().value) + '\n';
+
+            logStr += "\nQueries:\n";
+            auto queriesArr = log["queries_logs"].get_array().value;
+
+            for(auto query : queriesArr)
+            {
+                logStr += "Name: " + std::string(query["name"].get_string().value) + '\n';
+                logStr += "Filter Result: " + std::string(query["filter_result"].get_bool().value ? "filtered" : "not filtered") + '\n';
+                logStr += "Data & Time: " + std::string(query["time"].get_string().value) + '\n';
+            }
+
+            output.push_back(logStr);
+        }
+    }
+
+    return output;
+}
+
 // Private Methods
 
 bool DatabaseManager::queryUrl(const string& url, const string& collection) const

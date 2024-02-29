@@ -39,6 +39,8 @@ void Server::run()
     std::thread listeningThread(&Communicator::listen, &m_communicator);
     string cmd;
 
+    std::cout << "Enter 'help' or '?' to see avaliable commands" << std::endl;
+
     while(cmd != "exit")
     {
         std::cout << std::endl << "Enter Command: ";
@@ -61,10 +63,12 @@ void Server::run()
 void Server::printHelp() const
 {
     std::cout << "help / ? : Print all commands avaliable for the user to use";
+    std::cout << "exit : Exit the firewall and close all resources related correctly" << std::endl;
     std::cout << "show : Show all security features of the firewall, and show their current status (ON/OFF)" << std::endl;
     std::cout << "change : Change the status of a certain security feature" << std::endl;
     std::cout << "blacklist / bl : Add or remove a certain URL in a blacklist, meaning this URL cannot be accessed while the firewall is on" << std::endl;
     std::cout << "whitelist / wl : Add or remove a certain URL in a whitelist, meaning this URL can always be access while firewall is on, and no security feature will activate while trying to access it" << std::endl;
+    std::cout << "view : View a certain data list which is stored in the database" << std::endl;
 }
 
 void Server::printSecurityFeatures()
@@ -132,4 +136,55 @@ void Server::whitelist()
 
     std::lock_guard<std::mutex> dbLock(dbMutex);
     m_communicator.getDatabaseManager().whitelistUrl(url);
+}
+
+void Server::viewDatabase()
+{
+    std::cout <<  std::endl << "Enter the number of data you want to see:" << std::endl;
+    std::cout << "1. Blacklist : list of blacklisted URLs" << std::endl;
+    std::cout << "2. Whitelist : list of whitelisted URLs" << std::endl;
+    std::cout << "3. Cache : list of the current queries which are cached and used for filtering if not turned off" << std::endl;
+    std::cout << "4. Logs : view the list of logs of queries which were used in the past" << std::endl;
+
+    int choice = 0;
+    std::cout << "Enter data list number: ";
+    std::cin >> choice;
+    std::cout << std::endl;
+
+    if(choice < 0 || choice > 4)
+    {
+        std::cerr << "Please enter a number from the data lists shown above!" << std::endl;
+        return;
+    }
+
+    std::vector<std::string> dataList;
+
+    {
+        std::lock_guard<std::mutex> dbLock(dbMutex);
+        DatabaseManager& db = m_communicator.getDatabaseManager();
+
+        switch(choice)
+        {
+            case 1:
+                dataList = db.getDataList(FILTER_DB, "Blacklist-URLs");
+                break;
+            case 2:
+                dataList = db.getDataList(FILTER_DB, "Whitelist-URLs");
+                break;
+            case 3:
+                dataList = db.getDataList(FILTER_DB, "Cache");
+                break;
+            case 4:
+                dataList = db.getDataList(LOG_DB, "Logs");
+                break;
+        }
+    }
+
+    if(choice != 4)
+    {
+        for(std::string data : dataList)
+        {
+            std::cout << data << std::endl;
+        }
+    }
 }
