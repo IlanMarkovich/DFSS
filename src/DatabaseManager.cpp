@@ -176,14 +176,14 @@ std::vector<std::string> DatabaseManager::getDataList(const std::string& db, con
         for(auto log : list)
         {
             std::string logStr = "Blocks:\n";
-            logStr += "Whitelist: " + std::string(log["whitelist_blocks"].get_string().value) + '\n';
-            logStr += "Blacklist: " + std::string(log["blacklist_blocks"].get_string().value) + '\n';
-            logStr += "Cache: " + std::string(log["cache_blocks"].get_string().value) + '\n';
-            logStr += "External: " + std::string(log["external_blocks"].get_string().value) + '\n';
-            logStr += "Phishing: " + std::string(log["phishing_blocks"].get_string().value) + '\n';
-            logStr += "DNSSEC: " + std::string(log["DNSSEC_blocks"].get_string().value) + '\n';
-            logStr += "SOP: " + std::string(log["SOP_blocks"].get_string().value) + '\n';
-            logStr += "Amount of requests: " + std::string(log["amount_of_requests"].get_string().value) + '\n';
+            logStr += "Whitelist: " + std::to_string(log["whitelist_blocks"].get_int32().value) + '\n';
+            logStr += "Blacklist: " + std::to_string(log["blacklist_blocks"].get_int32().value) + '\n';
+            logStr += "Cache: " + std::to_string(log["cache_blocks"].get_int32().value) + '\n';
+            logStr += "External: " + std::to_string(log["external_blocks"].get_int32().value) + '\n';
+            logStr += "Phishing: " + std::to_string(log["phishing_blocks"].get_int32().value) + '\n';
+            logStr += "DNSSEC: " + std::to_string(log["DNSSEC_blocks"].get_int32().value) + '\n';
+            logStr += "SOP: " + std::to_string(log["SOP_blocks"].get_int32().value) + '\n';
+            logStr += "Amount of requests: " + std::to_string(log["amount_of_requests"].get_int32().value) + '\n';
 
             logStr += "\nQueries:\n";
             auto queriesArr = log["queries_logs"].get_array().value;
@@ -192,7 +192,7 @@ std::vector<std::string> DatabaseManager::getDataList(const std::string& db, con
             {
                 logStr += "Name: " + std::string(query["name"].get_string().value) + '\n';
                 logStr += "Filter Result: " + std::string(query["filter_result"].get_bool().value ? "filtered" : "not filtered") + '\n';
-                logStr += "Data & Time: " + std::string(query["time"].get_string().value) + '\n';
+                logStr += "Date & Time: " + std::string(query["time"].get_string().value) + '\n';
             }
 
             output.push_back(logStr);

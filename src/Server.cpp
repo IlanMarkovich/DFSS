@@ -186,5 +186,23 @@ void Server::viewDatabase()
         {
             std::cout << data << std::endl;
         }
+        return;
     }
+
+    if(dataList.size() == 0)
+    {
+        std::cerr << "There are no logs avaliable" << std::endl;
+        return;
+    }
+
+    std::cout << "Enter a number of the logs you want to see between 1 and " << dataList.size() << ": ";
+    std::cin >> choice;
+
+    if(choice < 1 || (unsigned long)choice > dataList.size())
+    {
+        std::cerr << "Please enter a number between 1 and " << dataList.size() << std::endl;
+        return;
+    }
+
+    std::cout << dataList[choice - 1] << std::endl;
 }
