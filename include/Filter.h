@@ -14,6 +14,9 @@ public:
 
     static int requestAmount;
     static int externalBlocks;
+    static int phishingBlocks;
+    static int DNSSEC_Blocks;
+    static int SOP_Blocks;
 private:
 
     DnsMessage _dnsReq;

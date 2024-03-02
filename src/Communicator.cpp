@@ -128,8 +128,11 @@ void Communicator::bind_user(req* r)
 
     std::vector<unsigned char> response = Communicator::DNS_ResponseFetcher(r->data);
 
-    if(!SOP_validation(response))
+    if(_dbManager.isFeatureTurnedOn("SOP") && !SOP_validation(response))
+    {
+        Filter::SOP_Blocks++;
         return;
+    }
 
     // Send the response back to the client
     sendto(fd, response.data(), response.size(), 0, (struct sockaddr*)&r->clientaddr, sizeof(r->clientaddr));
