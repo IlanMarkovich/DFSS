@@ -92,7 +92,7 @@ RegexFilter::RegexFilter(std::string url)
 
 bool RegexFilter::Filter(std::string url)
 {
-    if(url.find(".") < MIN_LENGTH)
+    if(url.find(".") <= MIN_LENGTH)
     {
         return false; // the string is too small to make assumption
     }
@@ -128,23 +128,27 @@ bool RegexFilter::FilterDifferentLength(std::string url)
         return false;// the difference is too big to make assumption
     }
     
-    //return countDiff(url, this->url) <= 2;
-    return false;
+    return equals(url.substr(0, url.find('.')), this->url.substr(0, this->url.find('.')));
 }
 
-int RegexFilter::countDiff(std::string a, std::string b)
+bool RegexFilter::equals(std::string a, std::string b) 
 {
-    if (a.size() == 0 || b.size() == 0)
-    {
-        return b.size() + a.size();
-    }
+    if(a == b)
+        return false;
 
-    if (a[0] == b[0])
-    {
-        return countDiff(a.substr(1), b.substr(1));
-    }
+    // Default number of mistakes allowed
+    int mistakes_allowed = (a.size()/4 + b.size()/4) / 2 - std::abs((int)(a.size() - b.size()));
 
-    int countA = countDiff(a.substr(1), b);
-    int countB = countDiff(a, b.substr(1));
-    return std::min(countA, countB) + 1;
+    if(mistakes_allowed <= 0)
+        return false;
+
+    for(size_t i = 0; i < std::min(a.size(), b.size()); i++) { // go from first to last character index the words
+        if(a[i] != b[i]) { // if this character from word 1 does not equal the character from word 2
+            mistakes_allowed--; // reduce one mistake allowed
+            if(mistakes_allowed < 0) { // and if you have more mistakes than allowed
+                return false; // return false
+            }
+        }
+    }
+    return true;
 }

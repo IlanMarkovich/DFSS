@@ -18,7 +18,7 @@ class RegexFilter
         bool FilterDifferentLength(std::string url);
         std::string GetSimillercharacters(char c);
         static const std::map<char, char> similar_chars_map;
-        int countDiff(std::string a, std::string b);
+        bool equals(std::string a, std::string b);
     public:
         RegexFilter(std::string url);
         bool Filter(std::string url);
