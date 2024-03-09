@@ -53,6 +53,8 @@ private:
     void bind_user(req* r);
     bool SOP_validation(const std::vector<unsigned char>& response);
 public:
+    static bool hasDNSCrypt;
+
     // C tor
     Communicator();
 

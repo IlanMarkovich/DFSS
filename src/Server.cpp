@@ -110,6 +110,9 @@ void Server::changeFeatureStatus()
 
     try
     {
+        if(feature == "DNSCrypt")
+            Communicator::hasDNSCrypt = !Communicator::hasDNSCrypt;
+        
         m_communicator.getDatabaseManager().changeFeatureStatus(feature);
     }
     catch (const std::exception& e)

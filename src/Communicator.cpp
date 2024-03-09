@@ -4,10 +4,13 @@
 
 #include <thread>
 
+bool Communicator::hasDNSCrypt = false;
+
 // C'tor
 Communicator::Communicator()
  : _listen(true)
 {
+    hasDNSCrypt = _dbManager.isFeatureTurnedOn("DNSCrypt");
 
     /* Create socket */
     if ((fd = socket (AF_INET, SOCK_DGRAM, 0)) == -1) 
@@ -81,8 +84,8 @@ void Communicator::stopListening()
 
 std::vector<unsigned char> Communicator::DNS_ResponseFetcher(const std::vector<unsigned char>& input)
 {
-    const char* dns_server = "1.1.1.1";
-    const int dns_port = 53;
+    const char* dns_server = hasDNSCrypt ? "127.0.0.1" : "1.1.1.1";
+    const int dns_port = hasDNSCrypt ? 54 : 53;
     char response[4096];  // Adjust the size as needed
 
     // Create a UDP socket
