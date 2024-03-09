@@ -58,6 +58,9 @@ DNSSEC::DNSSEC(const DnsMessage & request)
     DnsMessage root_DNSKEY_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes()));
     // ------------------------------------------------------------------------------------------
 
+    if(!TLD_DS_response->is_DNSSEC_response())
+        return;
+
     // Checking the recieved data with their digital signatures
     _filterResult = verifyServer(&root_DNSKEY_response, &root_DS_response) ? Root : Non;
     _filterResult = _filterResult == Root && verifyServer(&TLD_DNSKEY_response, TLD_DS_response, root_DS_response.getData_RR()->getData()) ? TLD : Root;

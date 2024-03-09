@@ -47,6 +47,9 @@ DnsMessage::DnsMessage(const std::vector<unsigned char>& message)
             case DNS_DS:
                 answer = new DNS_DS_Answer(type, message, index);
                 break;
+            default:
+                _DNSSEC_response = false;
+                break;
         }
 
         _answers.push_back(answer);
