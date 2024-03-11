@@ -5,10 +5,10 @@
 #include <map>
 #include <functional>
 
-#define DNSSCRYPT_START "sudo /opt/dnscrypt-proxy/dnscrypt-proxy -service start"
-#define DNSSCRYPT_STOP "sudo /opt/dnscrypt-proxy/dnscrypt-proxy -service stop"
-#define PATH "/opt/dnscrypt-proxy"
-#define DNSSCRYPT_INSTALL "sudo /opt/dnscrypt-proxy/dnscrypt-proxy -service install"
+#define DNSSCRYPT_START "sudo /opt/dnscrypt/dnscrypt-proxy -service start"
+#define DNSSCRYPT_STOP "sudo /opt/dnscrypt/dnscrypt-proxy -service stop"
+#define PATH "/opt/dnscrypt"
+#define DNSSCRYPT_INSTALL "sudo /opt/dnscrypt/dnscrypt-proxy -service install"
 
 class Server
 {
@@ -25,7 +25,8 @@ private:
         { "bl", [this](){ blacklist(); } },
         { "whitelist", [this](){ whitelist(); } },
         { "wl", [this](){ whitelist(); } },
-        { "view", [this](){ viewDatabase(); } }
+        { "view", [this](){ viewDatabase(); } },
+        { "log", [this](){ logData(); } }
     };
 
 public:
@@ -40,4 +41,5 @@ private:
     void blacklist();
     void whitelist();
     void viewDatabase();
+    void logData();
 };

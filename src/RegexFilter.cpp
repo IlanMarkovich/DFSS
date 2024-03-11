@@ -32,6 +32,9 @@ const std::map<char,char> RegexFilter::similar_chars_map = {
     {'v','U'},
     {'U','u'},
     {'u','V'},
+
+    {'a', '@'},
+    {'@', 'a'}
 };
 
 std::string RegexFilter::GetSimillercharacters(char c)
@@ -50,51 +53,89 @@ std::string RegexFilter::GetSimillercharacters(char c)
 
 RegexFilter::RegexFilter(std::string url)
 {
-    if(url.find(".") < MIN_LENGTH)
+    if(url.size() < MIN_LENGTH)
     {
         throw RegexFilterSizeException(); // the string is too small to make assumption
     }
     this->url = url;
 
 
-    this->regexPatternSame = "^" + url + "$";
-    this->regexPatternOneDiffrence = "";
-    this->regexPatternTwoDiffrence = "";
-    this->regexPatternLettersAdded = "[" + url + "]*([^" + url + "])[" + url + "]*";
+    // regex to check if the url is the same
+    regexPatternSame = "^" + url + "$";
+    // regex to check if you have one char diffrent from the url
+    regexPatternOneDiffrence = "";
+    // regex to check if you have one char diffrent from the url
+    regexPatternTwoDiffrence = "";
+    // regex to check if charcters have been added to the same url 
+    regexPatternLengthNegtiveOne = ".*";
+    // regex to check if charcters have been removed to the same url 
+    regexPatternLengthPlasOne = "";
 
-    for (size_t i = 0; i < url.length(); ++i) {
+    for (size_t i = 0; i < url.length(); i++)
+    {
         char curr_first_char = url[i];
+        bool flag_curr_first_Has_similler = similar_chars_map.find(curr_first_char) != similar_chars_map.end();
         
-        if(similar_chars_map.find(curr_first_char) == similar_chars_map.end())// curr character has no simller characters in the map 
+        regexPatternLengthNegtiveOne += url[i];
+        regexPatternLengthNegtiveOne += ".*";
+
+        std::string similar_chars_for_first = "";
+
+        if (flag_curr_first_Has_similler)
         {
-            continue;
+            regexPatternOneDiffrence += "|^" + url.substr(0, i); // add the start of the url
+            similar_chars_for_first = GetSimillercharacters(curr_first_char);
         }
-
-        regexPatternOneDiffrence += "|^" + url.substr(0, i); // add the start of the url
-        std::string similar_chars_for_first = GetSimillercharacters(curr_first_char);
-
-        for (size_t j = i + 1; j < url.length(); ++j)
+        regexPatternLengthPlasOne += "|.*";
+        for (size_t j = 0; j < url.length(); j++)
         {
             char curr_second_char = url[j];
-            if(similar_chars_map.find(curr_second_char) == similar_chars_map.end())// curr character has no simller characters in the map 
+            bool flag_curr_second_Has_similler = similar_chars_map.find(curr_second_char) != similar_chars_map.end();
+
+            if (j != i)
             {
-                continue;
+                regexPatternLengthPlasOne += curr_second_char;
+                regexPatternLengthPlasOne += ".*";
             }
-            regexPatternTwoDiffrence += "|^" + url.substr(0, i) + similar_chars_for_first + url.substr(i + 1, j - i - 1);
-            std::string similar_chars_for_second = GetSimillercharacters(curr_second_char);
+            else
+            {
+                if (flag_curr_second_Has_similler)
+                {
+                    std::string similar_chars_for_second = GetSimillercharacters(curr_second_char);
+                    regexPatternLengthPlasOne += similar_chars_for_second;
+                }
+                else
+                {
+                    regexPatternLengthPlasOne += curr_second_char;
+                }
+                regexPatternLengthPlasOne += ".*";
+            }
 
-            regexPatternTwoDiffrence += similar_chars_for_second + url.substr(j + 1) + "$";
+            if (j >= i + 1 && flag_curr_second_Has_similler && flag_curr_first_Has_similler)
+            {
+                char curr_second_char = url[j];
+                regexPatternTwoDiffrence += "|^" + url.substr(0, i) + similar_chars_for_first + url.substr(i + 1, j - i - 1);
+                std::string similar_chars_for_second = GetSimillercharacters(curr_second_char);
+
+                regexPatternTwoDiffrence += similar_chars_for_second + url.substr(j + 1) + "$";
+            }
         }
-
-        regexPatternOneDiffrence += similar_chars_for_first + url.substr(i + 1) + "$"; // add the end of the url and the similler characters
+        if (flag_curr_first_Has_similler)
+        {
+            regexPatternOneDiffrence += similar_chars_for_first + url.substr(i + 1) + "$"; // add the end of the url and the similler characters
+        }
     }
+
+    regexPatternOneDiffrence = regexPatternOneDiffrence.size() == 0 ? regexPatternOneDiffrence : regexPatternOneDiffrence.substr(1, regexPatternLengthPlasOne.size() - 1);
+    regexPatternTwoDiffrence = regexPatternTwoDiffrence.size() == 0 ? regexPatternTwoDiffrence : regexPatternTwoDiffrence.substr(1, regexPatternLengthPlasOne.size() - 1);
+    regexPatternLengthPlasOne = regexPatternLengthPlasOne.size() == 0 ? regexPatternLengthPlasOne : regexPatternLengthPlasOne.substr(1, regexPatternLengthPlasOne.size() - 1);
 }
 
 bool RegexFilter::Filter(std::string url)
 {
-    if(url.find(".") <= MIN_LENGTH)
+    if(url.size() < MIN_LENGTH)
     {
-        return false; // the string is too small to make assumption
+        throw RegexFilterSizeException(); // the string is too small to make assumption
     }
     int LengthDifference = abs(url.size() - this->url.size());
 
@@ -127,28 +168,9 @@ bool RegexFilter::FilterDifferentLength(std::string url)
     {
         return false;// the difference is too big to make assumption
     }
-    
-    return equals(url.substr(0, url.find('.')), this->url.substr(0, this->url.find('.')));
-}
-
-bool RegexFilter::equals(std::string a, std::string b) 
-{
-    if(a == b)
-        return false;
-
-    // Default number of mistakes allowed
-    int mistakes_allowed = (a.size()/4 + b.size()/4) / 2 - std::abs((int)(a.size() - b.size()));
-
-    if(mistakes_allowed <= 0)
-        return false;
-
-    for(size_t i = 0; i < std::min(a.size(), b.size()); i++) { // go from first to last character index the words
-        if(a[i] != b[i]) { // if this character from word 1 does not equal the character from word 2
-            mistakes_allowed--; // reduce one mistake allowed
-            if(mistakes_allowed < 0) { // and if you have more mistakes than allowed
-                return false; // return false
-            }
-        }
+    if(LengthDifference == 1)
+    {
+        return std::regex_match(url, std::regex(regexPatternLengthPlasOne));
     }
-    return true;
+    return std::regex_match(url, std::regex(regexPatternLengthNegtiveOne));
 }

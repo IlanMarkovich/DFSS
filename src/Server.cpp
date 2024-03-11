@@ -21,14 +21,13 @@ void Server::run()
         // Structure which would store the metadata
         struct stat sb;
         
+        // If the DNSCrypt service is not installed, execute the service install command
         if (!(stat(PATH, &sb) == 0 && !(sb.st_mode & S_IFDIR)))
         {
-            std::string cmdMakeDirInOpt = "sudo mkdir ";
-            cmdMakeDirInOpt += PATH;
-            system(cmdMakeDirInOpt.c_str());
-            cmdMakeDirInOpt = "mv  -v ./dnscrypt/* ";
-            cmdMakeDirInOpt += PATH;
-            system(cmdMakeDirInOpt.c_str());
+            // Copy the needed files to the service directory
+            system("cp -r ./dnscrypt /opt");
+
+            // Install the service
             system(DNSSCRYPT_INSTALL);
         }
 
@@ -69,6 +68,7 @@ void Server::printHelp() const
     std::cout << "blacklist / bl : Add or remove a certain URL in a blacklist, meaning this URL cannot be accessed while the firewall is on" << std::endl;
     std::cout << "whitelist / wl : Add or remove a certain URL in a whitelist, meaning this URL can always be access while firewall is on, and no security feature will activate while trying to access it" << std::endl;
     std::cout << "view : View a certain data list which is stored in the database" << std::endl;
+    std::cout << "log: Log all of the recent activity from the last timed logged (using cache data)" << std::endl;
 }
 
 void Server::printSecurityFeatures()
@@ -208,4 +208,14 @@ void Server::viewDatabase()
     }
 
     std::cout << dataList[choice - 1] << std::endl;
+}
+
+void Server::logData()
+{
+    std::lock_guard<std::mutex> dbLock(dbMutex);
+    
+    if(m_communicator.getDatabaseManager().log())
+        std::cout << "Logged successfully" << std::endl;
+    else
+        std::cerr << "Did not log because there is nothing to log!" << std::endl;
 }

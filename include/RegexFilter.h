@@ -14,11 +14,13 @@ class RegexFilter
         std::string regexPatternOneDiffrence;
         std::string regexPatternTwoDiffrence;
         std::string regexPatternLettersAdded;
+        std::string regexPatternLengthNegtiveOne;
+        std::string regexPatternLengthPlasOne;
+
         bool FilterSameLength(std::string url);
         bool FilterDifferentLength(std::string url);
         std::string GetSimillercharacters(char c);
         static const std::map<char, char> similar_chars_map;
-        bool equals(std::string a, std::string b);
     public:
         RegexFilter(std::string url);
         bool Filter(std::string url);

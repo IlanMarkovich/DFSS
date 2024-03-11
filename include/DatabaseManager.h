@@ -83,7 +83,16 @@ public:
     /// @param feature The feature which status is begin changed
     void changeFeatureStatus(const std::string& feature);
 
+    /// @brief Gets a certain data list from the databasae
+    /// @param db The database which the connection will get the data from
+    /// @param collection The collection which is the data required
+    /// @return The data list
     std::vector<std::string> getDataList(const std::string& db, const std::string& collection) const;
+
+    /// @brief Taks the fields of this class, information from the cache collection and more
+    /// to log this session of the firewall (activates automatically in d'tor)
+    /// By saving using the cache it will save the last `MAX_CACHE_SIZE` requests
+    bool log();
 private:
     /// @brief Queries a DB to see if a certain `url` exists in the collection `collection`
     /// @param url The URL being queried
@@ -100,9 +109,4 @@ private:
     /// @param url The URL being insterted to either of the collections
     /// @param collection The collection `url` being inserted to
     void listUrl(const string& url, const string& collection);
-
-    /// @brief Taks the fields of this class, information from the cache collection and more
-    /// to log this session of the firewall (activates automatically in d'tor)
-    /// By saving using the cache it will save the last `MAX_CACHE_SIZE` requests
-    void log();
 };

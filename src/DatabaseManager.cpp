@@ -202,6 +202,46 @@ std::vector<std::string> DatabaseManager::getDataList(const std::string& db, con
     return output;
 }
 
+bool DatabaseManager::log()
+{
+    // If there were no requests it means there is nothing to log
+    if(Filter::requestAmount == 0)
+        return false;
+
+    document doc;
+    doc << "blacklist_blocks" << _blacklistBlocks;
+    doc << "whitelist_blocks" << _whitelistBlocks;
+    doc << "cache_blocks" << _cacheBlocks;
+    doc << "external_blocks" << Filter::externalBlocks;
+    doc << "phishing_blocks" << Filter::phishingBlocks;
+    doc << "DNSSEC_blocks" << Filter::DNSSEC_Blocks;
+    doc << "SOP_blocks" << Filter::SOP_Blocks;
+    doc << "amount_of_requests" << Filter::requestAmount;
+
+    bsoncxx::builder::basic::array arrBuilder;
+
+    for(auto&& doc : _connection[FILTER_DB]["Cache"].find({}))
+    {
+        arrBuilder.append(doc);
+    }
+
+    doc << "queries_logs" << arrBuilder;
+    _connection[LOG_DB]["Logs"].insert_one(doc.view());
+
+    // Reset the variables and the cache collection
+    _blacklistBlocks = 0;
+    _whitelistBlocks = 0;
+    _cacheBlocks = 0;
+    Filter::externalBlocks = 0;
+    Filter::phishingBlocks = 0;
+    Filter::DNSSEC_Blocks = 0;
+    Filter::SOP_Blocks = 0;
+    Filter::requestAmount = 0;
+    _connection[FILTER_DB]["Cache"].delete_many(bsoncxx::v_noabi::document::view_or_value());
+
+    return true;
+}
+
 // Private Methods
 
 bool DatabaseManager::queryUrl(const string& url, const string& collection) const
@@ -235,38 +275,4 @@ void DatabaseManager::listUrl(const string & url, const string & collection)
     }
 
     _connection[FILTER_DB][collection].insert_one(doc.view());
-}
-
-void DatabaseManager::log()
-{
-    document doc;
-    doc << "blacklist_blocks" << _blacklistBlocks;
-    doc << "whitelist_blocks" << _whitelistBlocks;
-    doc << "cache_blocks" << _cacheBlocks;
-    doc << "external_blocks" << Filter::externalBlocks;
-    doc << "phishing_blocks" << Filter::phishingBlocks;
-    doc << "DNSSEC_blocks" << Filter::DNSSEC_Blocks;
-    doc << "SOP_blocks" << Filter::SOP_Blocks;
-    doc << "amount_of_requests" << Filter::requestAmount;
-
-    bsoncxx::builder::basic::array arrBuilder;
-
-    for(auto&& doc : _connection[FILTER_DB]["Cache"].find({}))
-    {
-        arrBuilder.append(doc);
-    }
-
-    doc << "queries_logs" << arrBuilder;
-    _connection[LOG_DB]["Logs"].insert_one(doc.view());
-
-    // Reset the variables and the cache collection
-    _blacklistBlocks = 0;
-    _whitelistBlocks = 0;
-    _cacheBlocks = 0;
-    Filter::externalBlocks = 0;
-    Filter::phishingBlocks = 0;
-    Filter::DNSSEC_Blocks = 0;
-    Filter::SOP_Blocks = 0;
-    Filter::requestAmount = 0;
-    _connection[FILTER_DB]["Cache"].delete_many(bsoncxx::v_noabi::document::view_or_value());
 }

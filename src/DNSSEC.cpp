@@ -58,7 +58,7 @@ DNSSEC::DNSSEC(const DnsMessage & request)
     DnsMessage root_DNSKEY_response(Communicator::DNS_ResponseFetcher(_request.getMessageInBytes()));
     // ------------------------------------------------------------------------------------------
 
-    if(!TLD_DS_response->is_DNSSEC_response())
+    if(domain_A_response.is_DNSSEC_response() && !TLD_DS_response->is_DNSSEC_response())
         return;
 
     // Checking the recieved data with their digital signatures
