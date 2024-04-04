@@ -12,7 +12,6 @@
 #include <arpa/inet.h>
 #include <atomic>
 
-#include "ThreadManager.h"
 #include "ByteHelper.h"
 #include "GetFromDistantDnsException.h"
 #include "SendToDistantDnsException.h"
