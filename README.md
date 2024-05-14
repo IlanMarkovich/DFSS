@@ -1,92 +1,22 @@
-# Team1003_Eitan_Ilan
+# DFSS
 
-
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.com/IlanMark/team1003_eitan_ilan.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.com/IlanMark/team1003_eitan_ilan/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
+<img src="https://i.imgur.com/5m7vokU.jpeg" alt="DFSS logo" width=200>
 
 ## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+DNS Firewall Security System is a Firewall system with the ability to protected a device / network with the action of filtering DNS traffic based on several filtering methods. This way it can block DNS traffic it considers malicious and notify the user about it by storing it in the logs. Blocking network in the DNS level allows for a very secure internet experience, because it has the ability to protect a user before it initializes communication with a malicious server and block it when the user's device uses DNS to figure out the IP address of the server.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+---
+### How it works
+As mentioned in the description, the Firewall uses several filtering methods to determine the reliability of a DNS message, those methods are:
+- **Database** - The most simple method, which is giving the user the option to add a certain URL to a whitelist or a blacklist, which will accordingly use this to validate or block a DNS message which contains the entered URL no matter what. This also includes the storage of filtering results in a cache collection in the database, which can be used in the same run of the project to make the filtering process more efficient.
+- **External URL check** - This is also a very simple method which utilizes the URL field in the DNS protocol. This method receives a large list which contains URLs which are known as malicious and harmful domains. This project uses the project [Blackbook](https://github.com/stamparm/blackbook/) to get said list. This method allows for more reliable and efficient overall filtering process.
+- **Phishing** - The last method to use the URL of a DNS message is the phishing method. As the name suggests this method has an algorithm which can detect a phishing attack attempt in a URL and block the DNS request immediately. This method iterates a list of the top 1000 most popular website's URLs, and activates an algorithm which uses regex to determine a potential phishing attack attempt. This project uses the project [URLchecker](https://github.com/bensooter/URLchecker) to get said list.
+- **DNSSEC** - The project uses the DNSSEC technology to prevent DNS-Spoofing attacks and Cache-Poisoning to ensure that the DNS traffic between the firewall and the DNS resolver is legitimate and there is no middle-man which tries to interfere with the DNS process of resolving the IP address of a URL. This method takes the DNS request from the user and initiates a DNSSEC communication with the DNS resolver, it takes all the digital certificates needed from the DNSSEC responses, and then uses cryptographic and hash functions to validate the DNSSEC connection and in the end the final IP address result which the firewall got from the DNS resolver.
+- **Rebinding attack prevention** - To prevent a rebinding attack where an attacker can make the user initiate a DNS query where the response is a private IP address, meaning the attacker can make the user make a connection with its router, or some other private device which is connected to the same network. This prevention method is quite simple, it looks at the IP address it got from the response of the DNS resolver and check if the IP is a private IP address, which should never be the case in a normal DNS query.
+- **DNSCrypt** - This is not a DNS filtering method, but another thing to ensure more security when using the firewall. This project is using a program called [dnscrypt-proxy](https://github.com/DNSCrypt/dnscrypt-proxy), which as it sound it creates another proxy on the device running the firewall, which has the ability to take any DNS request/response and convert it from DNS to DNSCrypt and vise versa. DNSCrypt is an encrypted protocol similar to DNS over HTTPS or DNS over TLS, which makes the whole connection much more secure and makes it harder for a middle man to understand any of the content of the DNS communication.
 
 ## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+As of the writing of this file, the project requires to build it and run it on a Linux x86, and it works best on Debian based distributions (Tested on Ubuntu). For building the project, it require an external MongoDB drivers for C++, which you can see the installation guide for [here](https://www.mongodb.com/docs/languages/cpp/cpp-driver/current/installation/linux/). After the installation you should run the binary main file and the firewall will run.
 
 ## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+This project was made for Magshimim Final Project, and was created by Ilan Markovich and Eitan Attar.
